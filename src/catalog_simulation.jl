@@ -345,6 +345,16 @@ function save_stellar_radii_with_planets_obs(cat_obs::KeplerObsCatalog, summary_
     close(f)
 end
 
+function save_snrs(snr_obs::Array{Vector{Float64}}, sim_param::SimParam; save_path::String="", run_number::Union{String,Int64}="")
+
+    f = open(joinpath(save_path, "snrs$run_number.out"), "w")
+    write_model_params(f, sim_param)
+    for snr_sys in snr_obs
+        println(f, snr_sys)
+    end
+    close(f)
+end
+
 function save_observed_catalog_given_cat_phys_obs(cat_phys::KeplerPhysicalCatalog, cat_obs::KeplerObsCatalog, summary_stat::CatalogSummaryStatistics, sim_param::SimParam; save_path::String="", run_number::Union{String,Int64}="")
 
     save_observed_catalog(cat_phys, cat_obs, summary_stat, sim_param; save_path=save_path, run_number=run_number)
@@ -363,11 +373,12 @@ function generate_and_save_observed_catalog_from_physical(cat_phys::KeplerPhysic
 
     @time begin
         cat_phys_cut = ExoplanetsSysSim.generate_obs_targets(cat_phys,sim_param)
-        cat_obs = observe_kepler_targets_single_obs(cat_phys_cut,sim_param)
+        cat_obs, snr_obs = observe_kepler_targets_single_obs(cat_phys_cut,sim_param)
         summary_stat = calc_summary_stats_model(cat_obs,sim_param)
     end
 
     save_observed_catalog_given_cat_phys_obs(cat_phys, cat_obs, summary_stat, sim_param; save_path=save_path, run_number=run_number)
+    save_snrs(snr_obs, sim_param; save_path=save_path, run_number=run_number)
 
     return cat_phys_cut, cat_obs, summary_stat
 end
