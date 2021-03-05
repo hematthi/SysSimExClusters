@@ -350,7 +350,9 @@ function save_snrs(snr_obs::Array{Vector{Float64}}, sim_param::SimParam; save_pa
     f = open(joinpath(save_path, "snrs$run_number.out"), "w")
     write_model_params(f, sim_param)
     for snr_sys in snr_obs
-        println(f, snr_sys)
+        if length(snr_sys) > 0
+            println(f, snr_sys)
+        end
     end
     close(f)
 end
