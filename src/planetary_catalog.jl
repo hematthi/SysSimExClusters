@@ -1,4 +1,3 @@
-using JLD
 using JLD2
 using FileIO
 using Dates
@@ -14,8 +13,8 @@ include("complexity_stats.jl")
 
 ##### To load the DR25 KOI catalog, update the planet radii using Gaia stellar radii, apply the necessary cuts:
 
-#planet_catalog = CSV.read(joinpath(dirname(pathof(ExoplanetsSysSim)), "../data/q1_q17_dr25_koi.csv"), header=157, allowmissing=:all)
-planet_catalog = load(joinpath(dirname(pathof(ExoplanetsSysSim)), "../data/q1_q17_dr25_koi.jld2"), "koi")
+planet_catalog = CSV.read(joinpath(dirname(pathof(ExoplanetsSysSim)), "../data/q1_q17_dr25_koi.csv"), DataFrame, header=157)
+#planet_catalog = load(joinpath(dirname(pathof(ExoplanetsSysSim)), "../data/q1_q17_dr25_koi.jld2"), "koi")
 
 stellar_catalog = ExoplanetsSysSim.StellarTable.setup_star_table(sim_param)
 
