@@ -11,13 +11,13 @@ sim_param = setup_sim_param_model()
 
 ##### To start saving the model iterations in the optimization into a file:
 
-model_name = "Clustered_P_R_optimization"
-optimization_number = "_random"*ARGS[1] # if want to run on the cluster with random initial active parameters: "_random"*ARGS[1]
+model_name = "H20"
+optimization_number = "_1" #"_random"*ARGS[1] # if want to run on the cluster with random initial active parameters: "_random"*ARGS[1]
 names_split = ["bluer", "redder"]
 AD_mod = true
 num_targs = 86760
 max_incl_sys = 0.
-max_evals = 5000
+max_evals = 10 #5000
 dists_include_split = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_nonmmr_KS", "duration_ratios_mmr_KS", "depths_KS", "radius_ratios_KS"]
 dists_include_all = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_nonmmr_KS", "duration_ratios_mmr_KS", "depths_KS", "radius_ratios_KS"]
 Pop_per_param = 4

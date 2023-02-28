@@ -21,8 +21,8 @@ function setup_sim_param_model(args::Vector{String} = Array{String}(undef, 0)) #
     add_param_fixed(sim_param,"osd_file","dr25fgk_relaxcut_osds.jld2") # WARNING: need 8gb of memory to read this file
 
     # For generating planetary system properties:
-    add_param_fixed(sim_param,"generate_planetary_system", generate_planetary_system_clustered)
-    #add_param_fixed(sim_param,"generate_planetary_system", generate_planetary_system_clustered_conditional)
+    add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model)
+    #add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model_conditional)
     add_param_fixed(sim_param,"cond_period_min", 215.0)
     add_param_fixed(sim_param,"cond_period_max", 235.0)
     add_param_fixed(sim_param,"cond_radius_min", 0.9*ExoplanetsSysSim.earth_radius)
@@ -120,7 +120,7 @@ function write_model_params(f, sim_param::SimParam)
     println(f, "# generate_num_planets_in_cluster: ", string(get_function(sim_param,"generate_num_planets_in_cluster")))
     println(f, "# log_rate_planets_per_cluster: ", get_real(sim_param,"log_rate_planets_per_cluster"))
     println(f, "# max_planets_in_clusters: ", get_int(sim_param,"max_planets_in_cluster"))
-    if string(get_function(sim_param,"generate_planetary_system")) == "generate_planetary_system_clustered_conditional"
+    if string(get_function(sim_param,"generate_planetary_system")) == "draw_system_clustered_amd_model_conditional"
         println(f, "# cond_period_min: ", get_real(sim_param,"cond_period_min"))
         println(f, "# cond_period_max: ", get_real(sim_param,"cond_period_max"))
         println(f, "# cond_radius_min (R_earth): ", get_real(sim_param,"cond_radius_min")/ExoplanetsSysSim.earth_radius)
@@ -174,7 +174,7 @@ function write_model_params(f, sim_param::SimParam)
         println(f, "# mr_model: Lognormal mass around Earthlike rocky (below radius_switch)")
     end
 
-    if string(get_function(sim_param,"generate_planetary_system")) == "generate_planetary_system_clustered"
+    if string(get_function(sim_param,"generate_planetary_system")) == "draw_system_clustered_amd_model"
         println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param,"sigma_log_radius_in_cluster"))
         println(f, "# sigma_logperiod_per_pl_in_cluster: ", get_real(sim_param,"sigma_logperiod_per_pl_in_cluster"))
     end
