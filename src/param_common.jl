@@ -21,7 +21,9 @@ function setup_sim_param_model(args::Vector{String} = Array{String}(undef, 0)) #
     add_param_fixed(sim_param,"osd_file","dr25fgk_relaxcut_osds.jld2") # WARNING: need 8gb of memory to read this file
 
     # For generating planetary system properties:
-    add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model)
+    #add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model)
+    #add_param_fixed(sim_param,"generate_planetary_system", draw_system_resonant_chain_amd_model)
+    add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_and_resonant_chain_amd_mixture_model)
     #add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model_conditional)
     add_param_fixed(sim_param,"cond_period_min", 215.0)
     add_param_fixed(sim_param,"cond_period_max", 235.0)
@@ -59,6 +61,7 @@ function setup_sim_param_model(args::Vector{String} = Array{String}(undef, 0)) #
     add_param_fixed(sim_param,"break_radius", 3.0*ExoplanetsSysSim.earth_radius)
 
     # Generate_num_planets_in_cluster currently use these for the inclination distribution:
+    add_param_fixed(sim_param,"f_resonant_chains", 0.1)
     add_param_fixed(sim_param,"resonance_width", 0.05)
     add_param_fixed(sim_param,"period_ratios_mmr", [2.0, 1.5, 4/3, 5/4])
     #add_param_active(sim_param,"f_high_incl", 0.4) # fraction of systems with higher mutual inclinations

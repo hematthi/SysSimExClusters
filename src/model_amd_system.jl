@@ -407,9 +407,9 @@ function generate_planetary_system_resonant_chain_clustered_sizes_distribute_amd
     # Draw eccentricities and inclinations and orient the system and the orbits of the planets:
     ecclist, inclskylist, ωlist, Ωskylist, meananomlist, incl_invariable, Ω_invariable = draw_planetary_system_orbits_and_sky_orientation_by_distributing_amd(Plist, masslist, star, sim_param; verbose=verbose)
 
-    # This final mutual-Hill stability test should be unnecessary if the period scales were drawn properly
+    # NOTE: currently, the resonant chains are not enforced to pass our mutual-Hill stability criterion
     # NOTE: NOT including eccentricities in final mutual-Hill stability test since they were drawn by distributing AMD after the periods were set
-    @assert(test_stability(Plist, masslist, star.mass, sim_param))
+    #####@assert(test_stability(Plist, masslist, star.mass, sim_param))
 
     # Packing and returning the system in structs:
     pl = Array{Planet}(undef, num_pl)
