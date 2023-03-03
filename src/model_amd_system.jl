@@ -1,6 +1,7 @@
 if !@isdefined ExoplanetsSysSim
     using ExoplanetsSysSim
 end
+include("conditional.jl")
 
 function generate_num_clusters_poisson(s::Star, sim_param::SimParam)
     lambda::Float64 = exp(get_real(sim_param, "log_rate_clusters"))
@@ -501,49 +502,18 @@ function draw_system_clustered_and_resonant_chain_amd_mixture_model(star::StarAb
     return ps
 end
 
-function has_conditional_planet(ps::PlanetarySystem, sim_param::SimParam)
+# Dictionary of model names and their functions for drawing from them:
+models = Dict{String,Function}()
+models["clustered_amd_model"] = draw_system_clustered_amd_model
+models["resonant_chain_amd_model"] = draw_system_resonant_chain_amd_model
+models["clustered_and_resonant_chain_amd_mixture_model"] = draw_system_clustered_and_resonant_chain_amd_mixture_model
 
-    # Check if system has a planet in the conditional period and radius range:
-    cond_period_min = get_real(sim_param, "cond_period_min")
-    cond_period_max = get_real(sim_param, "cond_period_max")
-    cond_radius_min = get_real(sim_param, "cond_radius_min")
-    cond_radius_max = get_real(sim_param, "cond_radius_max")
-    cond_mass_min = get_real(sim_param, "cond_mass_min")
-    cond_mass_max = get_real(sim_param, "cond_mass_max")
-    cond_also_transits = get_bool(sim_param, "cond_also_transits")
-
-    found_cond_planet = false
-    for pl in 1:length(ps.planet)
-        period = ps.orbit[pl].P
-        radius = ps.planet[pl].radius
-        mass = ps.planet[pl].mass
-        in_period_range = cond_period_min <= period <= cond_period_max
-        in_radius_range = cond_radius_min <= radius <= cond_radius_max
-        in_mass_range = cond_mass_min <= mass <= cond_mass_max
-        if in_period_range && in_radius_range && in_mass_range
-            found_cond_planet = cond_also_transits ? ExoplanetsSysSim.does_planet_transit(ps, pl) : true
-        end
-    end
-    return found_cond_planet
-end
-
-function draw_system_clustered_amd_model_conditional(star::StarAbstract, sim_param::SimParam; verbose::Bool=false)
-    local ps
-
-    max_attempts_cond = 10000
-    attempts_cond = 0
-    found_cond_planet = false
-    while !found_cond_planet && attempts_cond < max_attempts_cond
-        attempts_cond += 1
-        ps = generate_planetary_system_clustered_periods_and_sizes_distribute_amd(star, sim_param; verbose=verbose)
-        found_cond_planet = has_conditional_planet(ps, sim_param)
-    end
-    if attempts_cond == max_attempts_cond
-        ps = PlanetarySystem(star)
-        @info("Failed to generate a system with a conditional planet after $max_attempts_cond attempts; returning just the star.")
-    else
-        @info("Generated system with a conditional planet after $attempts_cond attempts.")
+function draw_system_model(star::StarAbstract, sim_param::SimParam; verbose::Bool=false)
+    # Wrapper function that reads the model name from sim_param and draws from the relevant model
+    if haskey(sim_param, "max_attempts_cond") # indicates that we want to condition on a given planet
+        return draw_system_model_conditional(star, sim_param; verbose=verbose)
     end
 
-    return ps
+    model_name = get(sim_param, "model_name", "")
+    return models[model_name](star, sim_param; verbose=verbose)
 end

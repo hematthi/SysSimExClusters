@@ -4,103 +4,174 @@ end
 
 import Compat #: UTF8String, ASCIIString
 
-##### Simulation_parameters:
-function setup_sim_param_model(args::Vector{String} = Array{String}(undef, 0)) # Allow this to take a list of parameter (e.g., from command line)
+function setup_sim_param_common()
     sim_param = SimParam()
 
-    # How many targets to generate:
-    add_param_fixed(sim_param,"num_targets_sim_pass_one", 86760) # Note this is used for the number of stars in the simulations, not necessarily related to number of Kepler targets
-    add_param_fixed(sim_param,"num_kepler_targets", 86760) # Note this is used for the number of Kepler targets for the observational catalog
+    # For setting up how many targets to generate:
+    add_param_fixed(sim_param, "num_targets_sim_pass_one", 86760) # the number of stars in the simulations, not necessarily related to number of Kepler targets
+    add_param_fixed(sim_param, "num_kepler_targets", 86760) # the number of Kepler targets for the observational catalog to be compared
 
     # For generating target star properties:
-    add_param_fixed(sim_param,"star_table_setup", ExoplanetsSysSim.StellarTable.setup_star_table)
-    add_param_fixed(sim_param,"stellar_catalog", "q1q17_dr25_gaia_berger_fgk_HFR2020b.jld2") #"q1q17_dr25_gaia_fgk_interpolate_ebprp.jld2"
-    add_param_fixed(sim_param,"generate_kepler_target", ExoplanetsSysSim.generate_kepler_target_from_table)
-    add_param_fixed(sim_param,"window_function", "DR25topwinfuncs.jld2")
-    #add_param_fixed(sim_param,"osd_file","dr25fgk_small_osds.jld2")
-    add_param_fixed(sim_param,"osd_file","dr25fgk_relaxcut_osds.jld2") # WARNING: need 8gb of memory to read this file
+    add_param_fixed(sim_param, "star_table_setup", ExoplanetsSysSim.StellarTable.setup_star_table)
+    add_param_fixed(sim_param, "stellar_catalog", "q1q17_dr25_gaia_berger_fgk_HFR2020b.jld2") #"q1q17_dr25_gaia_fgk_interpolate_ebprp.jld2"
+    add_param_fixed(sim_param, "generate_kepler_target", ExoplanetsSysSim.generate_kepler_target_from_table)
+    add_param_fixed(sim_param, "window_function", "DR25topwinfuncs.jld2")
+    #add_param_fixed(sim_param, "osd_file","dr25fgk_small_osds.jld2")
+    add_param_fixed(sim_param, "osd_file","dr25fgk_relaxcut_osds.jld2") # WARNING: need 8gb of memory to read this file
 
-    # For generating planetary system properties:
-    #add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model)
-    #add_param_fixed(sim_param,"generate_planetary_system", draw_system_resonant_chain_amd_model)
-    add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_and_resonant_chain_amd_mixture_model)
-    #add_param_fixed(sim_param,"generate_planetary_system", draw_system_clustered_amd_model_conditional)
-    add_param_fixed(sim_param,"cond_period_min", 215.0)
-    add_param_fixed(sim_param,"cond_period_max", 235.0)
-    add_param_fixed(sim_param,"cond_radius_min", 0.9*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param,"cond_radius_max", 1.0*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param,"cond_mass_min", 0.77*ExoplanetsSysSim.earth_mass)
-    add_param_fixed(sim_param,"cond_mass_max", 0.86*ExoplanetsSysSim.earth_mass)
-    add_param_fixed(sim_param,"cond_also_transits", true)
+    # For setting range of system sky-inclinations:
+    # NOTE: make sure the difference between this and 90 (deg) is not too small compared to the mutual inclinations of the planets in each system
+    add_param_fixed(sim_param,"max_incl_sys", 0.0) # degrees; gives system inclinations from "max_incl_sys" (deg) to 90 (deg), so set to 0 for isotropic distribution of system inclinations
 
-    add_param_active(sim_param,"f_stars_with_planets_attempted_color_slope", 0.9)
-    add_param_active(sim_param,"f_stars_with_planets_attempted_at_med_color", 0.88)
-    add_param_fixed(sim_param,"med_color", 0.81)
-    #add_param_active(sim_param,"f_stars_with_planets_attempted", 0.6)
-    add_param_fixed(sim_param,"generate_num_clusters", generate_num_clusters_ZTP)
-    add_param_fixed(sim_param,"generate_num_planets_in_cluster", generate_num_planets_in_cluster_ZTP)
-    add_param_active(sim_param,"log_rate_clusters", log(1.0))
-    add_param_fixed(sim_param,"max_clusters_in_sys", 20)
-    add_param_active(sim_param,"log_rate_planets_per_cluster", log(1.6))
-    add_param_fixed(sim_param,"max_planets_in_cluster", 20)
+    # For calculating observables from physical system properties:
+    add_param_fixed(sim_param, "calc_target_obs_single_obs", ExoplanetsSysSim.calc_target_obs_single_obs)
+    add_param_fixed(sim_param, "max_tranets_in_sys", 8) # SysSim ignores some planets in any systems with more than this many transiting planets to avoid wasting time on unphysical parameter values
+    add_param_fixed(sim_param, "transit_noise_model", ExoplanetsSysSim.transit_noise_model_diagonal)
+    add_param_fixed(sim_param, "read_target_obs", ExoplanetsSysSim.simulated_read_kepler_observations) # Read Kepler observations to compare to from disk
+    #add_param_fixed(sim_param, "rng_seed",1234) # If you want to be able to reproduce simulations
 
-    # Generate_num_planets_in_cluster currently calls:
-    add_param_fixed(sim_param,"generate_periods", ExoplanetsSysSim.generate_periods_power_law)
-    add_param_fixed(sim_param,"generate_sizes", ExoplanetsSysSim.generate_sizes_broken_power_law) # To choose the way we draw planetary radii; if "generate_sizes_power_law", then takes "power_law_r"; if "generate_sizes_broken_power_law", then takes "power_law_r1", "power_law_r2", and "break_radius"
-    add_param_active(sim_param,"power_law_P", 0.)
-    #add_param_fixed(sim_param,"power_law_P1", 2.0)
-    #add_param_fixed(sim_param,"power_law_P2", 0.5)
-    #add_param_fixed(sim_param,"power_law_r", -2.5)
-    add_param_active(sim_param,"power_law_r1", -1.4)
-    add_param_active(sim_param,"power_law_r2", -5.2)
-    add_param_fixed(sim_param,"min_period", 3.0)
-    add_param_fixed(sim_param,"max_period", 300.0)
-    #add_param_fixed(sim_param,"break_period", 10.0)
-    add_param_fixed(sim_param,"min_radius", 0.5*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param,"max_radius", 10.0*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param,"break_radius", 3.0*ExoplanetsSysSim.earth_radius)
+    return sim_param
+end
 
-    # Generate_num_planets_in_cluster currently use these for the inclination distribution:
-    add_param_fixed(sim_param,"f_resonant_chains", 0.1)
-    add_param_fixed(sim_param,"resonance_width", 0.05)
-    add_param_fixed(sim_param,"period_ratios_mmr", [2.0, 1.5, 4/3, 5/4])
-    #add_param_active(sim_param,"f_high_incl", 0.4) # fraction of systems with higher mutual inclinations
-    #add_param_active(sim_param,"sigma_incl", 50.) # degrees; 0 = coplanar w/ generate_kepler_target_simple; ignored by generate_planetary_system_uncorrelated_incl
-    #add_param_active(sim_param,"sigma_incl_near_mmr", 1.3)
+function add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param::SimParam)
+    #add_param_active(sim_param, "f_stars_with_planets_attempted", 0.6)
+    add_param_active(sim_param, "f_stars_with_planets_attempted_color_slope", 0.9)
+    add_param_active(sim_param, "f_stars_with_planets_attempted_at_med_color", 0.88)
+    add_param_fixed(sim_param, "med_color", 0.81)
+    add_param_fixed(sim_param, "generate_num_clusters", generate_num_clusters_ZTP)
+    add_param_fixed(sim_param, "generate_num_planets_in_cluster", generate_num_planets_in_cluster_ZTP)
+    add_param_active(sim_param, "log_rate_clusters", log(1.0))
+    add_param_fixed(sim_param, "max_clusters_in_sys", 20)
+    add_param_active(sim_param, "log_rate_planets_per_cluster", log(1.6))
+    add_param_fixed(sim_param, "max_planets_in_cluster", 20)
+end
 
-    add_param_fixed(sim_param,"max_incl_sys", 0.0) # degrees; gives system inclinations from "max_incl_sys" (deg) to 90 (deg), so set to 0 for isotropic distribution of system inclinations; NOTE: make sure the difference between this and 90 (deg) is at least greater than "sigma_incl" and "sigma_incl_near_mmr"!
+function add_sim_param_period_distribution!(sim_param::SimParam)
+    add_param_fixed(sim_param, "generate_periods", ExoplanetsSysSim.generate_periods_power_law)
+    add_param_fixed(sim_param, "min_period", 3.0)
+    add_param_fixed(sim_param, "max_period", 300.0)
+    #add_param_fixed(sim_param, "break_period", 10.0)
+    add_param_active(sim_param, "power_law_P", 0.)
+    #add_param_fixed(sim_param, "power_law_P1", 2.0)
+    #add_param_fixed(sim_param, "power_law_P2", 0.5)
+    add_param_active(sim_param, "sigma_logperiod_per_pl_in_cluster", 0.25)
+end
 
-    # Generate_num_planets_in_cluster currently use these for the eccentricity distribution:
-    add_param_fixed(sim_param,"generate_e_omega", ExoplanetsSysSim.generate_e_omega_rayleigh)
-    #add_param_active(sim_param,"sigma_hk_color_slope", 0.04)
-    #add_param_active(sim_param,"sigma_hk_at_med_color", 0.02)
-    add_param_active(sim_param,"sigma_hk", 0.25)
+function add_sim_param_radius_distribution!(sim_param::SimParam)
+    add_param_fixed(sim_param, "generate_sizes", ExoplanetsSysSim.generate_sizes_broken_power_law) # if "generate_sizes_power_law", then takes "power_law_r"; if "generate_sizes_broken_power_law", then takes "power_law_r1", "power_law_r2", and "break_radius"
+    add_param_fixed(sim_param, "min_radius", 0.5*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "max_radius", 10.0*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "break_radius", 3.0*ExoplanetsSysSim.earth_radius)
+    #add_param_fixed(sim_param, "power_law_r", -2.5)
+    add_param_active(sim_param, "power_law_r1", -1.4)
+    add_param_active(sim_param, "power_law_r2", -5.2)
+    add_param_active(sim_param, "sigma_log_radius_in_cluster", 0.3)
+end
 
-    # Generate_num_planets_in_cluster currently use these for the stability tests:
-    add_param_active(sim_param,"num_mutual_hill_radii", 10.0)
-    add_param_fixed(sim_param,"f_amd_crit", 1.0) # fraction of critical AMD to distribute
+function add_sim_param_mass_distribution!(sim_param::SimParam)
+    #add_param_fixed(sim_param, "generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table)
+    add_param_fixed(sim_param, "generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below)
+end
 
-    #add_param_fixed(sim_param,"generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table)
-    add_param_fixed(sim_param,"generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below)
-    add_param_active(sim_param,"sigma_log_radius_in_cluster", 0.3)
-    add_param_active(sim_param,"sigma_logperiod_per_pl_in_cluster", 0.25)
+function add_sim_param_eccentricity_distribution!(sim_param::SimParam)
+    add_param_fixed(sim_param, "generate_e_omega", ExoplanetsSysSim.generate_e_omega_rayleigh)
+    add_param_active(sim_param, "sigma_hk", 0.25)
+end
 
-    # Functions to calculate observables from physical system properties:
-    add_param_fixed(sim_param,"calc_target_obs_single_obs", ExoplanetsSysSim.calc_target_obs_single_obs)
-    add_param_fixed(sim_param,"max_tranets_in_sys", 8) # SysSim ignores some planets in any systems with more than this many transiting planets to avoid wasting time on unphysical parameter values
-    add_param_fixed(sim_param,"transit_noise_model", ExoplanetsSysSim.transit_noise_model_diagonal)
-    #add_param_fixed(sim_param,"rng_seed",1234) # If you want to be able to reproduce simulations
-    add_param_fixed(sim_param,"read_target_obs", ExoplanetsSysSim.simulated_read_kepler_observations) # Read Kepler observations to compare to from disk
+function add_sim_param_inclination_distribution!(sim_param::SimParam)
+    add_param_active(sim_param, "f_high_incl", 0.4) # fraction of systems with higher mutual inclinations
+    add_param_active(sim_param, "sigma_incl", 50.) # degrees; 0 = coplanar w/ generate_kepler_target_simple; ignored by generate_planetary_system_uncorrelated_incl
+    add_param_active(sim_param, "sigma_incl_near_mmr", 1.3) # degrees; for both the low mutual inclination population and planets near MMRs
+end
 
-    # Read any customizations, so its easy to keep them separate from the essentials:
-    #=
-    if isfile("param_custom.jl")
-        include("param_custom.jl")
-    end
-    =#
-    if @isdefined add_param_custom
-        sim_param = add_param_custom(sim_param)
-    end
+function add_sim_param_stability_criteria_and_amd!(sim_param::SimParam)
+    add_param_active(sim_param, "num_mutual_hill_radii", 10.0)
+    add_param_fixed(sim_param, "f_amd_crit", 1.0) # fraction of critical AMD to distribute (can be greater than 1)
+    #add_param_fixed(sim_param, "distribute_amd", distribute_amd_per_mass) # TODO: add param for defining how to distribute the AMD amongst the planets (per unit mass or randomly per planet)
+end
+
+function add_sim_param_resonant_chains!(sim_param::SimParam)
+    add_param_fixed(sim_param, "resonance_width", 0.05)
+    add_param_fixed(sim_param, "period_ratios_mmr", [2.0, 1.5, 4/3, 5/4])
+end
+
+function add_sim_param_conditionals!(sim_param::SimParam)
+    add_param_fixed(sim_param, "max_attempts_cond", 10000)
+    add_param_fixed(sim_param, "cond_period_min", 215.0)
+    add_param_fixed(sim_param, "cond_period_max", 235.0)
+    add_param_fixed(sim_param, "cond_radius_min", 0.9*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "cond_radius_max", 1.0*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "cond_mass_min", 0.77*ExoplanetsSysSim.earth_mass)
+    add_param_fixed(sim_param, "cond_mass_max", 0.86*ExoplanetsSysSim.earth_mass)
+    add_param_fixed(sim_param, "cond_also_transits", true)
+end
+
+function setup_sim_param_clustered_amd_model()
+    sim_param = setup_sim_param_common()
+
+    # Define the function name for the relevant model:
+    add_param_fixed(sim_param, "model_name", "clustered_amd_model")
+
+    # Add the necessary model parameters:
+    add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
+    add_sim_param_period_distribution!(sim_param)
+    add_sim_param_radius_distribution!(sim_param)
+    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
+    add_sim_param_stability_criteria_and_amd!(sim_param)
+    add_sim_param_resonant_chains!(sim_param) # still needed for calculating which planets are near MMRs for now
+    
+    return sim_param
+end
+
+function setup_sim_param_resonant_chain_amd_model()
+    sim_param = setup_sim_param_common()
+
+    # Define the function name for the relevant model:
+    add_param_fixed(sim_param, "model_name", "resonant_chain_amd_model")
+    
+    # Add the necessary model parameters:
+    add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
+    add_sim_param_period_distribution!(sim_param)
+    add_sim_param_radius_distribution!(sim_param)
+    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
+    add_sim_param_stability_criteria_and_amd!(sim_param)
+    add_sim_param_resonant_chains!(sim_param)
+
+    return sim_param
+end
+
+function setup_sim_param_clustered_and_resonant_chain_amd_mixture_model()
+    sim_param = setup_sim_param_common()
+
+    # Define the function name for the relevant model:
+    add_param_fixed(sim_param, "model_name", "clustered_and_resonant_chain_amd_mixture_model")
+    
+    # Add the necessary model parameters:
+    add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
+    add_sim_param_period_distribution!(sim_param)
+    add_sim_param_radius_distribution!(sim_param)
+    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
+    add_sim_param_stability_criteria_and_amd!(sim_param)
+    add_sim_param_resonant_chains!(sim_param)
+    add_param_fixed(sim_param, "f_resonant_chains", 0.1)
+
+    return sim_param
+end
+
+function setup_sim_param_model()
+    # Setup the sim params for the desired model:
+    sim_param = setup_sim_param_clustered_amd_model()
+    #sim_param = setup_sim_param_resonant_chain_amd_model()
+    #sim_param = setup_sim_param_clustered_and_resonant_chain_amd_mixture_model()
+
+    add_param_fixed(sim_param, "generate_planetary_system", draw_system_model)
+
+    # To condition the model on a given planet, uncomment the following:
+    #add_sim_param_conditionals!(sim_param::SimParam)
+
     return sim_param
 end
 
