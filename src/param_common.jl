@@ -182,75 +182,105 @@ end
 
 
 function write_model_params(f, sim_param::SimParam)
-    # This function writes all the model parameters to a file f as a header
-    println(f, "# num_targets_sim_pass_one: ", get_int(sim_param,"num_targets_sim_pass_one"))
-    println(f, "# max_incl_sys: ", get_real(sim_param,"max_incl_sys"))
-    #println(f, "# f_stars_with_planets_attempted: ", get_real(sim_param,"f_stars_with_planets_attempted"))
-    println(f, "# f_stars_with_planets_attempted_at_med_color: ", get_real(sim_param,"f_stars_with_planets_attempted_at_med_color"))
-    println(f, "# f_stars_with_planets_attempted_color_slope: ", get_real(sim_param,"f_stars_with_planets_attempted_color_slope"))
-    println(f, "# generate_num_clusters: ", string(get_function(sim_param,"generate_num_clusters")))
-    println(f, "# log_rate_clusters: ", get_real(sim_param,"log_rate_clusters"))
-    println(f, "# max_clusters_in_sys: ", get_int(sim_param,"max_clusters_in_sys"))
-    println(f, "# generate_num_planets_in_cluster: ", string(get_function(sim_param,"generate_num_planets_in_cluster")))
-    println(f, "# log_rate_planets_per_cluster: ", get_real(sim_param,"log_rate_planets_per_cluster"))
-    println(f, "# max_planets_in_clusters: ", get_int(sim_param,"max_planets_in_cluster"))
-    if string(get_function(sim_param,"generate_planetary_system")) == "draw_system_clustered_amd_model_conditional"
-        println(f, "# cond_period_min: ", get_real(sim_param,"cond_period_min"))
-        println(f, "# cond_period_max: ", get_real(sim_param,"cond_period_max"))
-        println(f, "# cond_radius_min (R_earth): ", get_real(sim_param,"cond_radius_min")/ExoplanetsSysSim.earth_radius)
-        println(f, "# cond_radius_max (R_earth): ", get_real(sim_param,"cond_radius_max")/ExoplanetsSysSim.earth_radius)
-        println(f, "# cond_mass_min (M_earth): ", get_real(sim_param,"cond_mass_min")/ExoplanetsSysSim.earth_mass)
-        println(f, "# cond_mass_max (M_earth): ", get_real(sim_param,"cond_mass_max")/ExoplanetsSysSim.earth_mass)
-        println(f, "# cond_also_transits: ", get_bool(sim_param,"cond_also_transits"))
+    # Write the model parameters to a file "f" as a header
+
+    # Common simulation parameters:
+    println(f, "# num_targets_sim_pass_one: ", get_int(sim_param, "num_targets_sim_pass_one"))
+    println(f, "# stellar_catalog: ", get(sim_param, "stellar_catalog", ""))
+    println(f, "# osd_file: ", get(sim_param, "osd_file", ""))
+    println(f, "# max_incl_sys: ", get_real(sim_param, "max_incl_sys"))
+    if haskey(sim_param, "rng_seed")
+        println(f, "# rng_seed: ", get_int(sim_param, "rng_seed"))
     end
 
-    if string(get_function(sim_param,"generate_periods")) == "generate_periods_power_law"
-        println(f, "# power_law_P: ", get_real(sim_param,"power_law_P"))
-    elseif string(get_function(sim_param,"generate_periods")) == "generate_periods_broken_power_law"
-        println(f, "# power_law_P1: ", get_real(sim_param,"power_law_P1"))
-        println(f, "# power_law_P2: ", get_real(sim_param,"power_law_P2"))
-        println(f, "# break_period: ", get_real(sim_param,"break_period"))
+    # Model specific parameters:
+    model_name = get(sim_param, "model_name", "")
+    println(f, "# model_name: ", model_name)
+    if model_name == "clustered_and_resonant_chain_amd_mixture_model"
+        println(f, "# f_resonant_chains: ", get_real(sim_param, "f_resonant_chains"))
     end
-    println(f, "# min_period: ", get_real(sim_param,"min_period"))
-    println(f, "# max_period: ", get_real(sim_param,"max_period"))
 
-    if string(get_function(sim_param,"generate_sizes")) == "generate_sizes_power_law"
-        println(f, "# power_law_r: ", get_real(sim_param,"power_law_r"))
-    elseif string(get_function(sim_param,"generate_sizes")) == "generate_sizes_broken_power_law"
-        println(f, "# power_law_r1: ", get_real(sim_param,"power_law_r1"))
-        println(f, "# power_law_r2: ", get_real(sim_param,"power_law_r2"))
-        println(f, "# break_radius (R_earth): ", get_real(sim_param,"break_radius")/ExoplanetsSysSim.earth_radius)
+    #println(f, "# f_stars_with_planets_attempted: ", get_real(sim_param, "f_stars_with_planets_attempted"))
+    println(f, "# f_stars_with_planets_attempted_at_med_color: ", get_real(sim_param, "f_stars_with_planets_attempted_at_med_color"))
+    println(f, "# f_stars_with_planets_attempted_color_slope: ", get_real(sim_param, "f_stars_with_planets_attempted_color_slope"))
+    println(f, "# med_color: ", get_real(sim_param, "med_color"))
+    println(f, "# generate_num_clusters: ", string(get_function(sim_param, "generate_num_clusters")))
+    println(f, "# log_rate_clusters: ", get_real(sim_param, "log_rate_clusters"))
+    println(f, "# max_clusters_in_sys: ", get_int(sim_param, "max_clusters_in_sys"))
+    println(f, "# generate_num_planets_in_cluster: ", string(get_function(sim_param, "generate_num_planets_in_cluster")))
+    println(f, "# log_rate_planets_per_cluster: ", get_real(sim_param, "log_rate_planets_per_cluster"))
+    println(f, "# max_planets_in_clusters: ", get_int(sim_param, "max_planets_in_cluster"))
+
+    generate_periods_func = string(get_function(sim_param, "generate_periods"))
+    println(f, "# generate_periods: ", generate_periods_func)
+    println(f, "# min_period: ", get_real(sim_param, "min_period"))
+    println(f, "# max_period: ", get_real(sim_param, "max_period"))
+    if generate_periods_func == "generate_periods_power_law"
+        println(f, "# power_law_P: ", get_real(sim_param, "power_law_P"))
+    elseif generate_periods_func == "generate_periods_broken_power_law"
+        println(f, "# break_period: ", get_real(sim_param, "break_period"))
+        println(f, "# power_law_P1: ", get_real(sim_param, "power_law_P1"))
+        println(f, "# power_law_P2: ", get_real(sim_param, "power_law_P2"))
     end
-    println(f, "# min_radius (R_earth): ", get_real(sim_param,"min_radius")/ExoplanetsSysSim.earth_radius)
-    println(f, "# max_radius (R_earth): ", get_real(sim_param,"max_radius")/ExoplanetsSysSim.earth_radius)
+    println(f, "# sigma_logperiod_per_pl_in_cluster: ", get_real(sim_param, "sigma_logperiod_per_pl_in_cluster"))
 
-    #println(f, "# f_high_incl: ", get_real(sim_param,"f_high_incl"))
-    #println(f, "# sigma_incl: ", get_real(sim_param,"sigma_incl"))
-    #println(f, "# sigma_incl_near_mmr: ", get_real(sim_param,"sigma_incl_near_mmr"))
-    println(f, "# sigma_hk: ", get_real(sim_param,"sigma_hk"))
-    #println(f, "# sigma_hk_at_med_color: ", get_real(sim_param,"sigma_hk_at_med_color"))
-    #println(f, "# sigma_hk_color_slope: ", get_real(sim_param,"sigma_hk_color_slope"))
-    println(f, "# num_mutual_hill_radii: ", get_real(sim_param,"num_mutual_hill_radii"))
-    println(f, "# f_amd_crit: ", get_real(sim_param,"f_amd_crit"))
+    generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
+    println(f, "# generate_sizes: ", generate_sizes_func)
+    println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius")/ExoplanetsSysSim.earth_radius)
+    println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius")/ExoplanetsSysSim.earth_radius)
+    if generate_sizes_func == "generate_sizes_power_law"
+        println(f, "# power_law_r: ", get_real(sim_param, "power_law_r"))
+    elseif generate_sizes_func == "generate_sizes_broken_power_law"
+        println(f, "# break_radius (R_earth): ", get_real(sim_param, "break_radius")/ExoplanetsSysSim.earth_radius)
+        println(f, "# power_law_r1: ", get_real(sim_param, "power_law_r1"))
+        println(f, "# power_law_r2: ", get_real(sim_param, "power_law_r2"))
+    end
+    println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
 
-    if string(get_function(sim_param,"generate_planet_mass_from_radius")) == "generate_planet_mass_from_radius_powerlaw"
-        println(f, "# mr_power_index: ", get_real(sim_param,"mr_power_index"))
-        println(f, "# mr_max_mass (M_earth): ", get_real(sim_param,"mr_max_mass")/ExoplanetsSysSim.earth_mass)
-    elseif string(get_function(sim_param,"generate_planet_mass_from_radius")) == "generate_planet_mass_from_radius_Ning2018"
+    generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
+    if generate_masses_func == "generate_planet_mass_from_radius_powerlaw"
+        println(f, "# mr_model: ", generate_masses_func)
+        println(f, "# mr_power_index: ", get_real(sim_param, "mr_power_index"))
+        println(f, "# mr_max_mass (M_earth): ", get_real(sim_param, "mr_max_mass")/ExoplanetsSysSim.earth_mass)
+    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018"
         println(f, "# mr_model: Ning2018")
-    elseif string(get_function(sim_param,"generate_planet_mass_from_radius")) == "generate_planet_mass_from_radius_Ning2018_table"
+    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table"
         println(f, "# mr_model: Ning2018_table")
-    elseif string(get_function(sim_param,"generate_planet_mass_from_radius")) == "generate_planet_mass_from_radius_Ning2018_table_above_normal_density_earthlike_rocky_below"
+    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table_above_normal_density_earthlike_rocky_below"
+        println(f, "# radius_switch (R_earth): ", radius_switch)
         println(f, "# mr_model: Ning2018_table (above radius_switch)")
         println(f, "# mr_model: Normal density around Earthlike rocky (below radius_switch)")
-    elseif string(get_function(sim_param,"generate_planet_mass_from_radius")) == "generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below"
+    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below"
+        println(f, "# radius_switch (R_earth): ", radius_switch)
         println(f, "# mr_model: Ning2018_table (above radius_switch)")
         println(f, "# mr_model: Lognormal mass around Earthlike rocky (below radius_switch)")
     end
 
-    if string(get_function(sim_param,"generate_planetary_system")) == "draw_system_clustered_amd_model"
-        println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param,"sigma_log_radius_in_cluster"))
-        println(f, "# sigma_logperiod_per_pl_in_cluster: ", get_real(sim_param,"sigma_logperiod_per_pl_in_cluster"))
+    println(f, "# generate_e_omega: ", string(get_function(sim_param, "generate_e_omega")))
+    println(f, "# sigma_hk: ", get_real(sim_param, "sigma_hk"))
+    #println(f, "# sigma_hk_at_med_color: ", get_real(sim_param, "sigma_hk_at_med_color"))
+    #println(f, "# sigma_hk_color_slope: ", get_real(sim_param, "sigma_hk_color_slope"))
+    #println(f, "# f_high_incl: ", get_real(sim_param, "f_high_incl"))
+    #println(f, "# sigma_incl (deg): ", get_real(sim_param, "sigma_incl"))
+    #println(f, "# sigma_incl_near_mmr (deg): ", get_real(sim_param, "sigma_incl_near_mmr"))
+    println(f, "# num_mutual_hill_radii: ", get_real(sim_param, "num_mutual_hill_radii"))
+    println(f, "# f_amd_crit: ", get_real(sim_param, "f_amd_crit"))
+    #println(f, "# distribute_amd: ", string(get_function(sim_param, "distribute_amd"))) # TODO: add param
+
+    println(f, "# resonance_width: ", get_real(sim_param, "resonance_width"))
+    println(f, "# period_ratios_mmr: ", get(sim_param, "period_ratios_mmr", Float64[]))
+
+    # Conditionals, if conditioning on a given planet:
+    if haskey(sim_param, "max_attempts_cond")
+        println(f, "# max_attempts_cond: ", get_int(sim_param, "max_attempts_cond"))
+        println(f, "# cond_period_min: ", get_real(sim_param, "cond_period_min"))
+        println(f, "# cond_period_max: ", get_real(sim_param, "cond_period_max"))
+        println(f, "# cond_radius_min (R_earth): ", get_real(sim_param, "cond_radius_min")/ExoplanetsSysSim.earth_radius)
+        println(f, "# cond_radius_max (R_earth): ", get_real(sim_param, "cond_radius_max")/ExoplanetsSysSim.earth_radius)
+        println(f, "# cond_mass_min (M_earth): ", get_real(sim_param, "cond_mass_min")/ExoplanetsSysSim.earth_mass)
+        println(f, "# cond_mass_max (M_earth): ", get_real(sim_param, "cond_mass_max")/ExoplanetsSysSim.earth_mass)
+        println(f, "# cond_also_transits: ", get_bool(sim_param, "cond_also_transits"))
     end
+
     println(f, "#")
 end
