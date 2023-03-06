@@ -97,12 +97,12 @@ end
 
 function add_sim_param_conditionals!(sim_param::SimParam)
     add_param_fixed(sim_param, "max_attempts_cond", 10000)
-    add_param_fixed(sim_param, "cond_period_min", 215.0)
-    add_param_fixed(sim_param, "cond_period_max", 235.0)
-    add_param_fixed(sim_param, "cond_radius_min", 0.9*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param, "cond_radius_max", 1.0*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param, "cond_mass_min", 0.77*ExoplanetsSysSim.earth_mass)
-    add_param_fixed(sim_param, "cond_mass_max", 0.86*ExoplanetsSysSim.earth_mass)
+    add_param_fixed(sim_param, "cond_period_min", 10.0)
+    add_param_fixed(sim_param, "cond_period_max", 20.0)
+    add_param_fixed(sim_param, "cond_radius_min", 1.5*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "cond_radius_max", 2.0*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "cond_mass_min", 0.0*ExoplanetsSysSim.earth_mass)
+    add_param_fixed(sim_param, "cond_mass_max", 10.0*ExoplanetsSysSim.earth_mass)
     add_param_fixed(sim_param, "cond_also_transits", true)
 end
 
