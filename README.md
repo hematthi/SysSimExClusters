@@ -18,7 +18,7 @@ In addition to these papers describing the new models, the simulated catalogs fr
 * [Millholland, He, Ford, et al. (2021), AJ, 162, 166 (17pp)](https://ui.adsabs.harvard.edu/abs/2021arXiv210615589M/abstract), \[[arXiv](https://arxiv.org/abs/2106.15589)\]
 * [He, Ford, and Ragozzine (2021b), AJ, 162, 216 (22pp)](https://ui.adsabs.harvard.edu/abs/2021arXiv210504703H/abstract), \[[arXiv](https://arxiv.org/abs/2105.04703)\]
 * [Millholland, He, and Zink (2022), AJ, 164, 72 (15pp)](https://ui.adsabs.harvard.edu/abs/2022AJ....164...72M/abstract), \[[arXiv](https://arxiv.org/abs/2207.10068)\]
-* [He and Ford (2022, accepted to AJ)](https://ui.adsabs.harvard.edu/abs/2022arXiv220809031H/abstract), \[[arXiv](https://arxiv.org/abs/2208.09031)\]
+* [He and Ford (2022), AJ, 164, 210 (10pp)](https://ui.adsabs.harvard.edu/abs/2022AJ....164..210H/abstract), \[[arXiv](https://arxiv.org/abs/2208.09031)\]
 
 **Important:** We have a separate code branch for each paper that provides new models or functionality:
 
@@ -70,7 +70,7 @@ While the core ExoplanetsSysSim and SysSimExClusters code is written in Julia, a
 
 :mega: UPDATE 09/20/22: :tada: This code is now available in the pip-installable Python package [SysSimPyPlots](https://syssimpyplots.readthedocs.io/en/latest/index.html), with detailed documentation and tutorials!
 
-:mega: UPDATE 09/29/22: :tada: In addition, the pip-installable Python package [SysSimPyMMEN](https://syssimpymmen.readthedocs.io/en/latest/) is also available and was used to generate the figures in He and Ford (2022) (in press).
+:mega: UPDATE 09/29/22: :tada: In addition, the pip-installable Python package [SysSimPyMMEN](https://syssimpymmen.readthedocs.io/en/latest/) is also available and was used to generate the figures in [He and Ford (2022)](https://ui.adsabs.harvard.edu/abs/2022AJ....164..210H/abstract).
 
 You do NOT need to download SysSimExClusters in order to use these Python packages (with existing simulated catalogs).
 
