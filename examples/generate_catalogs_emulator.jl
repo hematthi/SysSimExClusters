@@ -6,9 +6,11 @@ include(joinpath(dir_path, "../src/optimization.jl"))
 
 ##### To load model parameters found using the GP emulator and simulate catalogs if they pass a distance threshold:
 
-save_path = "test"
-file_name = "GP_train2000_meanf75.0_sigmaf2.7_lscales9.7_vol109.18_points50000_meanInf_stdInf_post-30.0.csv"
-GP_points = CSV.read(joinpath(save_path, file_name), comment="#")
+save_path = "/Users/hematthi/Documents/GradSchool/Research/ACI/Simulated_Data/AMD_system/Split_stars/Singles_ecc/Params11_KS/Distribute_AMD_per_mass/durations_norm_circ_singles_multis_GF2020_KS/GP_best_models_1000"
+
+GP_data_path = "/Users/hematthi/Documents/GradSchool/Research/ACI/Model_Optimization/AMD_system/Split_stars/Singles_ecc/Params11_KS/Distribute_AMD_per_mass/durations_norm_circ_singles_multis_GF2020_KS/GP_files"
+GP_file_name = "GP_train2000_meanf100.0_sigmaf2.7_lscales9.7_vol109.18_points50000_meanInf_stdInf_post-35.0.csv"
+GP_points = CSV.read(joinpath(GP_data_path, GP_file_name), DataFrame, comment="#")
 active_params_names = names(GP_points)[1:end-3]
 active_params_best_all = GP_points[!,active_params_names]
 
@@ -24,12 +26,12 @@ model_name = "Clustered_P_R"
 names_split = ["bluer", "redder"]
 AD_mod = true
 num_targs = 86760
-dists_include_split = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_nonmmr_KS", "duration_ratios_mmr_KS", "depths_KS", "radius_ratios_KS"]
+dists_include_split = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_norm_circ_singles_KS", "durations_norm_circ_multis_KS", "duration_ratios_nonmmr_KS", "duration_ratios_mmr_KS", "depths_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
 dists_include_all = dists_include_split
 
-d_threshold, mean_f = 40., 75.
+d_threshold, mean_f = 75., 100.
 n_pass = 1000 # number of simulations we want to pass the distance threshold
-n_save = 0 # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
+n_save = 1000 # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
 
 file_name = model_name*"_pass_GP_meanf$(mean_f)_thres$(d_threshold)_pass$(n_pass)_targs$(num_targs).txt"
 f = open(joinpath(save_path, file_name), "w")
@@ -163,5 +165,5 @@ end
 println(f, "# elapsed time: ", t_elapsed, " seconds")
 close(f)
 
-summary_table = DataFrame(summary_array, [names(GP_points); :dist_tot_weighted])
+summary_table = DataFrame(summary_array, [names(GP_points); "dist_tot_weighted"])
 CSV.write(joinpath(save_path, "Simulate_GP_points_summary.txt"), summary_table)
