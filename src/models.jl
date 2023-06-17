@@ -123,6 +123,7 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
     end
 
     idx = sortperm(Plist)
+    clusteridlist = clusteridlist[idx]
     Plist = Plist[idx]
     Rlist = Rlist[idx]
     masslist = masslist[idx]
