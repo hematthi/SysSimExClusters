@@ -78,6 +78,11 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
     max_period::Float64 = get_real(sim_param, "max_period")
     max_period_ratio = max_period/min_period
     sigma_logperiod_per_pl_in_cluster = get_real(sim_param, "sigma_logperiod_per_pl_in_cluster")
+    
+    # Parameters for defining planets near MMRs:
+    # TODO: replace with a definition using the zeta statistic
+    w_mmrs = get_real(sim_param, "resonance_width")
+    mmrs = get_any(sim_param, "period_ratios_mmr", Vector{Float64})
 
     # If single planet in cluster:
     if n==1
@@ -120,11 +125,16 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
 
     # Old rejection sampling:
     found_good_periods = false # will be true if entire cluster is likely to be stable assuming circular and coplanar orbits (given sizes/masses and periods)
-    max_attempts = 100
+    found_no_near_below_MMRs = false # will be true if there are no period ratios just within any MMRs in the cluster
+    max_attempts = 1000
     attempts_periods = 0
-    while !found_good_periods && attempts_periods < max_attempts
+    while (!found_good_periods || !found_no_near_below_MMRs) && attempts_periods < max_attempts
         attempts_periods += 1
+        
         P = rand(Pdist, n)
+        Pratios = P[2:end]./P[1:end-1]
+        
+        # Check the stability of the cluster:
         if test_stability(P, mass, star.mass, sim_param)
             # If pass mutual Hill criteria, also check circular MMR overlap criteria:
             a = semimajor_axis.(P, mass .+star.mass)
@@ -135,7 +145,22 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
                 @info("Found set of periods passing mutual Hill criteria but not circular MMR overlap criteria.")
             end
         end
+        
+        # Check if there are any planets just within MMRs:
+        # TODO: replace with a definition using the zeta statistic
+        #
+        has_near_below_MMRs = false
+        for pr in mmrs
+            has_near_below_MMRs = has_near_below_MMRs || any(pr*(1-w_mmrs) .< Pratios .< pr)
+        end
+        found_no_near_below_MMRs = !has_near_below_MMRs
+        #
     end # while trying to draw periods
+    
+    if attempts_periods == max_attempts
+        P[1:end] .= NaN
+        @info("Max attempts ($attempts_periods) reached. Returning an empty cluster.")
+    end
     #
 
     return (P, R, mass) # NOTE: can also return earlier if only one planet in cluster; also, the planets are NOT sorted at this point
