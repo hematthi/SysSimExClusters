@@ -39,7 +39,7 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
         clusteridlist[pl_start:pl_stop] = ones(Int64, num_pl_in_cluster[c])*c
         Rlist[pl_start:pl_stop], masslist[pl_start:pl_stop] = Rlist_tmp, masslist_tmp
 
-        #= New sampling:
+        #= Allowed regions sampling:
         idx = .!isnan.(Plist[1:pl_stop-n])
         idy = .!isnan.(Plist_tmp)
         if any(idy)
@@ -63,7 +63,7 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
         @assert(test_stability(view(Plist,1:pl_stop), view(masslist,1:pl_stop), star.mass, sim_param)) # should always be true if our period scale draws are correct
         =#
 
-        # Old rejection sampling:
+        # Rejection sampling:
         valid_cluster = !any(isnan.(Plist_tmp)) # if the cluster has any nans, the whole cluster is discarded
         valid_period_scale = false
         max_attempts_period_scale = 100
@@ -127,6 +127,19 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
     Plist = Plist[idx]
     Rlist = Rlist[idx]
     masslist = masslist[idx]
+    
+    ##### TESTING NEW MODEL:
+    # Move period ratios just narrow of MMRs to just wide (or at) MMRs:
+    
+    move_period_ratios_from_narrow_to_wide_of_mmrs_inside_out!(Plist, sim_param)
+    
+    keep = .!isnan.(Plist)
+    num_pl = sum(keep)
+    clusteridlist = clusteridlist[keep]
+    Plist = Plist[keep]
+    Rlist = Rlist[keep]
+    masslist = masslist[keep]
+    #####
 
     # Draw eccentricities and inclinations and orient the system and the orbits of the planets:
     ecclist, inclskylist, ωlist, Ωskylist, meananomlist, incl_invariable, Ω_invariable = draw_planetary_system_orbits_and_sky_orientation_by_distributing_amd(Plist, masslist, star, sim_param; verbose=verbose)

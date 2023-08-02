@@ -109,7 +109,7 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
 
     # Draw unscaled periods first, checking for mutual Hill separation stability assuming circular and coplanar orbits
 
-    #= New sampling:
+    #= Allowed regions sampling:
     P = zeros(n)
     for i in 1:n # Draw periods one at a time
         if any(isnan.(P))
@@ -123,9 +123,9 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
     @assert(test_stability(P, mass, star.mass, sim_param)) # should always be true if our unscaled period draws are correct
     =#
 
-    # Old rejection sampling:
+    # Rejection sampling:
     found_good_periods = false # will be true if entire cluster is likely to be stable assuming circular and coplanar orbits (given sizes/masses and periods)
-    found_no_near_below_MMRs = false # will be true if there are no period ratios just within any MMRs in the cluster
+    found_no_near_below_MMRs = true # will be true if there are no period ratios just within any MMRs in the cluster
     max_attempts = 1000
     attempts_periods = 0
     while (!found_good_periods || !found_no_near_below_MMRs) && attempts_periods < max_attempts
@@ -148,13 +148,13 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
         
         # Check if there are any planets just within MMRs:
         # TODO: replace with a definition using the zeta statistic
-        #
+        #=
         has_near_below_MMRs = false
-        for pr in mmrs
-            has_near_below_MMRs = has_near_below_MMRs || any(pr*(1-w_mmrs) .< Pratios .< pr)
+        for pr_mmr in mmrs
+            has_near_below_MMRs = has_near_below_MMRs || any(pr_mmr*(1-w_mmrs) .< Pratios .< pr_mmr)
         end
         found_no_near_below_MMRs = !has_near_below_MMRs
-        #
+        =#
     end # while trying to draw periods
     
     if attempts_periods == max_attempts
@@ -164,6 +164,31 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
     #
 
     return (P, R, mass) # NOTE: can also return earlier if only one planet in cluster; also, the planets are NOT sorted at this point
+end
+
+function move_period_ratios_from_narrow_to_wide_of_mmrs_inside_out!(Plist::Vector{Float64}, sim_param::SimParam; truncate_max_period::Bool=true)
+    # NOTE: 'Plist' must be sorted!
+
+    # Load functions and model parameters:
+    # TODO: replace with a definition using the zeta statistic
+    # TODO: add a parameter for the probability/fraction of such period ratios to move
+    max_period::Float64 = get_real(sim_param, "max_period")
+    w_mmrs = get_real(sim_param, "resonance_width")
+    mmrs = get_any(sim_param, "period_ratios_mmr", Vector{Float64})
+    @assert(all(mmrs .> 1))
+    
+    Pratios = Plist[2:end]./Plist[1:end-1]
+    for (i,pr) in enumerate(Pratios)
+        for pr_mmr in mmrs
+            if pr_mmr*(1-w_mmrs) < pr < pr_mmr
+                Plist[i+1:end] *= pr_mmr/pr # shift all the periods beyond the i^th planet to longer periods such that the period ratio of the i^th pair is set to 'pr_mmr'
+            end
+        end
+    end
+    
+    if truncate_max_period
+        Plist[Plist .>= max_period] .= NaN
+    end
 end
 
 function generate_resonant_chain(star::StarT, sim_param::SimParam; n::Int64=2) where {StarT<:StarAbstract}

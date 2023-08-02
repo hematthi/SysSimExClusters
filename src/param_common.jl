@@ -91,7 +91,7 @@ function add_sim_param_stability_criteria_and_amd!(sim_param::SimParam)
 end
 
 function add_sim_param_resonant_chains!(sim_param::SimParam)
-    add_param_fixed(sim_param, "resonance_width", 0.05)
+    add_param_fixed(sim_param, "resonance_width", 0.02)
     add_param_fixed(sim_param, "period_ratios_mmr", [2.0, 1.5, 4/3, 5/4])
 end
 
