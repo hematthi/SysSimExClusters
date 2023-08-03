@@ -3,14 +3,15 @@
 ##### TODO: write better docstrings
 ##### TODO: turn some parameters into sim params
 
-#using Distributions
+using Distributions
 using ExoplanetsSysSim
 
 
 
-function mean_radius_and_scatter_given_mass_neil_rogers2020(M::Real; M_break1::Real, M_break2::Real, γ0::Real, γ1::Real, γ2::Real, σ0::Real, σ1::Real, σ2::Real)
+function mean_radius_and_scatter_given_mass_neil_rogers2020(M::Real; C::Real, M_break1::Real, M_break2::Real, γ0::Real, γ1::Real, γ2::Real, σ0::Real, σ1::Real, σ2::Real)
 
     # M: planet mass (Earth masses)
+    # C: normalization (Earth radii)
     # M_break1: break point 1 in planet mass (between low and intermediate masses)
     # M_break2: break point 2 in planet mass (between intermediate and high masses)
     # γ0: power-law slope for low mass range
@@ -21,7 +22,6 @@ function mean_radius_and_scatter_given_mass_neil_rogers2020(M::Real; M_break1::R
     # σ2: scatter in radius for high mass range
     
     # Power-laws in each mass regime (low/intermediate/high):
-    C = 1. # not sure what this normalization should be yet
     μ0 = C*M^γ0
     μ1 = C*M_break1^(γ0-γ1)*M^γ1
     μ2 = C*M_break1^(γ0-γ1)*M_break2^(γ1-γ2)*M^γ2
@@ -40,6 +40,13 @@ end
 function draw_radius_given_mass_neil_rogers2020(M::Real, μ::Real, σ::Real)
     Rdist = Normal(μ, σ*μ) # normal distribution with a fractional scatter
     return rand(Rdist)
+end
+
+function draw_radius_given_mass_neil_rogers2020(M::Real; C::Real, M_break1::Real, M_break2::Real, γ0::Real, γ1::Real, γ2::Real, σ0::Real, σ1::Real, σ2::Real)
+    # Wrapper function for the above
+    
+    μ, σ = mean_radius_and_scatter_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2)
+    return draw_radius_given_mass_neil_rogers2020(M, μ, σ)
 end
 
 
