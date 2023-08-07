@@ -72,18 +72,18 @@ function luminosity_star(R_star::Real, T_eff::Real)
     return L
 end
 
-function bolometric_flux_at_planet_period(P::Real, Mstar::Real, L::Real)
+function bolometric_flux_at_planet_period(P::Real; Mstar::Real=1., L::Real=luminosity_star(1., 5780.))
 
     # P: planet orbital period (days)
-    # Mstar: stellar mass (Solar masses)
-    # L: stellar luminosity (erg s^-1)
+    # Mstar=1.: stellar mass (Solar masses)
+    # L=luminosity_star(1., 5780.): stellar luminosity (erg s^-1)
     
     sma = ExoplanetsSysSim.semimajor_axis(P, Mstar) * ExoplanetsSysSim.AU_in_m_IAU2012 * 100. # cm
     F = L/(4π*sma^2) # erg s^-1 cm^-2
     return F
 end
 
-F_oplus = bolometric_flux_at_planet_period(365.25, 1., luminosity_star(1., 5780.)) # bolometric flux on Earth at present (erg s^-1 cm^-2)
+F_oplus = bolometric_flux_at_planet_period(365.25, Mstar=1., L=luminosity_star(1., 5780.)) # bolometric flux on Earth at present (1.369 erg s^-1 cm^-2)
 
 function mass_loss_timescale_lopez2012(M_env::Real, R_prim::Real, F_p::Real, F_oplus::Real=F_oplus, F_XUV_E100::Real=504., ϵ::Real=0.1)
 
