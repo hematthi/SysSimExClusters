@@ -2,6 +2,9 @@ using PyPlot
 
 include("../src/models_test.jl")
 
+savefigures = false
+save_dir = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Figures/NR20_model/"
+
 
 
 ##### To make some plots testing some new functions for implementing Neil & Rogers (2020) model ("NR20"):
@@ -45,6 +48,9 @@ xlabel(L"\log_{10}(M ~ [M_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(R ~ [R_\oplus])", fontsize=20)
 legend(fontsize=16)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_radius_vs_mass_analytic.png"))
+end
 
 
 
@@ -60,6 +66,9 @@ xlabel(L"\log_{10}(M ~ [M_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(M_{\rm env} ~ [M_\oplus])", fontsize=20)
 legend(fontsize=16)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_envelope_mass_vs_mass_analytic.png"))
+end
 
 # Plot fraction of planet mass in envelope vs. planet mass:
 fig = figure(figsize=(8,8))
@@ -69,6 +78,9 @@ xlabel(L"\log_{10}(M ~ [M_\oplus])", fontsize=20)
 ylabel(L"M_{\rm env}/M", fontsize=20)
 legend(fontsize=16)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_envelope_mass_fraction_vs_mass_analytic.png"))
+end
 
 
 
@@ -118,6 +130,9 @@ xlabel(L"\log_{10}(M_{\rm init} ~ [M_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(R_{\rm init} ~ [R_\oplus])", fontsize=20)
 legend(fontsize=16)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_initial_radius_vs_mass_vs_envelope_mass.png"))
+end
 
 # Plot distributions of initial planet radius, mass, and envelope mass fraction:
 fig = figure(figsize=(16,5))
@@ -132,6 +147,9 @@ subplot(1,3,3)
 hist(log10.(M_env_all./M_init_all), bins=range(-1., 0., 51))
 xlabel(L"\log_{10}(M_{\rm env,init}/M_{\rm init})", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_initial_radius_mass_envelope_mass_hists.png"))
+end
 
 # Plot distributions of orbital period, mass-loss timescale, and probability of envelope retention:
 fig = figure(figsize=(16,5))
@@ -146,6 +164,9 @@ subplot(1,3,3)
 hist(log10.(p_ret_all), bins=range(-6, 0, 51))
 xlabel(L"\log_{10}(p_{\rm ret})", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_period_tloss_pret_hists.png"))
+end
 
 # Plot period vs. initial radius vs. mass-loss timescale:
 fig = figure(figsize=(10,8))
@@ -157,6 +178,9 @@ xlim([log10(P_min), log10(P_max)])
 xlabel(L"\log_{10}(P ~ [{\rm days}])", fontsize=20)
 ylabel(L"\log_{10}(R_{\rm init} ~[R_\oplus])", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_initial_radius_vs_period_vs_tloss.png"))
+end
 
 # Plot period vs. initial envelope mass vs. mass-loss timescale:
 fig = figure(figsize=(10,8))
@@ -168,6 +192,9 @@ xlim([log10(P_min), log10(P_max)])
 xlabel(L"\log_{10}(P [{\rm days}])", fontsize=20)
 ylabel(L"\log_{10}(M_{\rm env,init} [M_\oplus])", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_initial_envelope_mass_vs_period_vs_tloss.png"))
+end
 
 #
 
@@ -188,6 +215,9 @@ hist(log10.(M_env_all./M_init_all), bins=range(-1., 0., 51), alpha=0.2, label="I
 hist(log10.(M_env_all./M_final_all)[bools_ret_all], bins=range(-1., 0., 51), alpha=0.2, label="Final")
 xlabel(L"\log_{10}(M_{\rm env}/M)", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_final_vs_initial_radius_mass_envelope_mass_hists.png"))
+end
 
 # Plot period vs. final radius (split into evaporated/retained envelopes):
 fig = figure(figsize=(10,8))
@@ -199,6 +229,9 @@ xlabel(L"\log_{10}(P ~ [{\rm days}])", fontsize=20)
 ylabel(L"\log_{10}(R_{\rm final} ~ [R_\oplus])", fontsize=20)
 legend(fontsize=16)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_final_radius_vs_period.png"))
+end
 
 # Plot final planet radius vs. mass (split into evaporated/retained envelopes):
 fig = figure(figsize=(10,8))
@@ -214,6 +247,9 @@ xlabel(L"\log_{10}(M_{\rm final} ~ [M_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(R_{\rm final} ~ [R_\oplus])", fontsize=20)
 legend(fontsize=16)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_final_radius_vs_mass.png"))
+end
 
 # Plot initial vs. final planet mass vs. initial envelope mass:
 fig = figure(figsize=(10,8))
@@ -226,6 +262,9 @@ ylim([log10(M_min), log10(M_max)])
 xlabel(L"\log_{10}(M_{\rm init} ~ [M_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(M_{\rm final} ~ [M_\oplus])", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_final_vs_initial_mass_vs_envelope_mass.png"))
+end
 
 # Plot initial vs. final planet radius vs. initial envelope mass:
 fig = figure(figsize=(10,8))
@@ -238,3 +277,6 @@ ylim([log10(R_min), log10(R_max)])
 xlabel(L"\log_{10}(R_{\rm init} ~ [R_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(R_{\rm final} ~ [R_\oplus])", fontsize=20)
 tight_layout()
+if savefigures
+    savefig(joinpath(save_dir, "NR20_model2_final_vs_initial_radius_vs_envelope_mass.png"))
+end
