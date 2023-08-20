@@ -124,6 +124,25 @@ function setup_sim_param_clustered_amd_model()
     return sim_param
 end
 
+function setup_sim_param_clustered_photoevap_amd_model()
+    sim_param = setup_sim_param_common()
+
+    # Define the function name for the relevant model:
+    add_param_fixed(sim_param, "model_name", "clustered_photoevap_amd_model")
+
+    # Add the necessary model parameters:
+    add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
+    add_sim_param_period_distribution!(sim_param)
+    add_sim_param_radius_distribution!(sim_param)
+    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
+    add_sim_param_stability_criteria_and_amd!(sim_param)
+    add_sim_param_resonant_chains!(sim_param) # still needed for calculating which planets are near MMRs for now
+    #TODO: add the new model params
+    
+    return sim_param
+end
+
 function setup_sim_param_resonant_chain_amd_model()
     sim_param = setup_sim_param_common()
 
@@ -163,7 +182,8 @@ end
 
 function setup_sim_param_model()
     # Setup the sim params for the desired model:
-    sim_param = setup_sim_param_clustered_amd_model()
+    #sim_param = setup_sim_param_clustered_amd_model()
+    sim_param = setup_sim_param_clustered_photoevap_amd_model()
     #sim_param = setup_sim_param_resonant_chain_amd_model()
     #sim_param = setup_sim_param_clustered_and_resonant_chain_amd_mixture_model()
 

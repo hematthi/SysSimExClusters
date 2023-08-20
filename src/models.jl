@@ -1,4 +1,5 @@
 include("models_components.jl")
+include("models_test.jl")
 include("conditional.jl")
 
 function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(star::StarAbstract, sim_param::SimParam; verbose::Bool=false)
@@ -129,7 +130,7 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
     masslist = masslist[idx]
     
     ##### TESTING NEW MODEL:
-    # Move period ratios just narrow of MMRs to just wide (or at) MMRs:
+    #= Move period ratios just narrow of MMRs to just wide (or at) MMRs:
     
     move_period_ratios_from_narrow_to_wide_of_mmrs_inside_out!(Plist, sim_param)
     
@@ -139,6 +140,7 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
     Plist = Plist[keep]
     Rlist = Rlist[keep]
     masslist = masslist[keep]
+    =#
     #####
 
     # Draw eccentricities and inclinations and orient the system and the orbits of the planets:
@@ -205,6 +207,20 @@ function draw_system_clustered_amd_model(star::StarAbstract, sim_param::SimParam
     return ps
 end
 
+function draw_system_clustered_photoevap_amd_model(star::StarAbstract, sim_param::SimParam; verbose::Bool=false)
+
+    # Decide whether to assign a planetary system to the star at all:
+    f_swpa = calc_fraction_of_stars_with_planets_linear_with_color(star, sim_param)
+    if rand() > f_swpa
+        #println("Star not assigned a planetary system.")
+        return PlanetarySystem(star)
+    end
+
+    # If get to this point, will try to draw a planetary system:
+    ps = generate_planetary_system_clustered_periods_and_sizes_photoevap_distribute_amd(star, sim_param; verbose=verbose)
+    return ps
+end
+
 function draw_system_resonant_chain_amd_model(star::StarAbstract, sim_param::SimParam; verbose::Bool=false)
 
     # Decide whether to assign a planetary system to the star at all:
@@ -244,6 +260,7 @@ end
 # Dictionary of model names and their functions for drawing from them:
 models = Dict{String,Function}()
 models["clustered_amd_model"] = draw_system_clustered_amd_model
+models["clustered_photoevap_amd_model"] = draw_system_clustered_photoevap_amd_model
 models["resonant_chain_amd_model"] = draw_system_resonant_chain_amd_model
 models["clustered_and_resonant_chain_amd_mixture_model"] = draw_system_clustered_and_resonant_chain_amd_mixture_model
 
