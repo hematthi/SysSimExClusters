@@ -1,6 +1,7 @@
 using PyPlot
 
 include("../src/models_test.jl")
+include("../src/clusters.jl")
 
 savefigures = false
 save_dir = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Figures/NR20_model/"
@@ -40,10 +41,18 @@ P_min, P_break, P_max = 0.3, 7.16, 100. # days
 # Plot planet radius (mean and scatter) vs. planet mass:
 fig = figure(figsize=(8,8))
 subplot(1,1,1)
-fill_between([log10(M) for M in M_array], log10.(μ_R_array .+ μ_R_array .* σ_R_array), log10.(μ_R_array .- μ_R_array .* σ_R_array), alpha=0.2, label="NR20, Model 2, scatter")
-plot([log10(M) for M in M_array], log10.(μ_R_array), label="NR20, Model 2, mean")
-plot([log10(M) for M in M_array], [log10(radius_given_mass_pure_iron_fit_seager2007(M)) for M in M_array], label="S07, pure-iron")
-plot([log10(M) for M in M_array], [log10(radius_given_mass_pure_silicate_fit_seager2007(M)) for M in M_array], label="S07, pure-silicate")
+plot(log10.(M_array), log10.(μ_R_array), label="NR20, Model 2, mean")
+fill_between(log10.(M_array), log10.(μ_R_array .+ μ_R_array .* σ_R_array), log10.(μ_R_array .- μ_R_array .* σ_R_array), alpha=0.2, label="NR20, Model 2, scatter")
+plot(log10.(M_array), [log10(radius_given_mass_pure_iron_fit_seager2007(M)) for M in M_array], color="r", label="S07, pure-iron")
+R_S07_silicate_array = map(M -> radius_given_mass_pure_silicate_fit_seager2007(M), M_array)
+plot(log10.(M_array), log10.(R_S07_silicate_array), color="g", label="S07, pure-silicate")
+fill_between(log10.(M_array), log10.(0.95 .* R_S07_silicate_array), log10.(1.05 .* R_S07_silicate_array), color="g", alpha=0.2, label="NR20, 5% scatter around S07 pure-silicate")
+plot(log10.(MR_earthlike_rocky[!,"mass"]), log10.(MR_earthlike_rocky[!,"radius"]), color="brown", label="Z19, Earth-like rocky")
+σ_logM_H20 = σ_logM_linear_given_radius.(MR_earthlike_rocky[!,"radius"])
+fill_betweenx(log10.(MR_earthlike_rocky[!,"radius"]), log10.(MR_earthlike_rocky[!,"mass"]) .- σ_logM_H20, log10.(MR_earthlike_rocky[!,"mass"]) .+ σ_logM_H20, color="brown", alpha=0.2, label="H20, scatter around Earth-like rocky") # note the fill between x
+#plot(log_Mass_table[2:end," 0.5"], log_Mass_table[2:end,"log_R"], color="k", ls="--", label="NWG2018, median")
+#fill_betweenx(log_Mass_table[2:end,"log_R"], log_Mass_table[2:end," 0.16"], log_Mass_table[2:end," 0.84"], color="k", alpha=0.2, label="NWG2018, scatter") # note the fill between x
+xlim(log10.([M_min, M_max])); ylim(log10.([R_min, R_max]))
 xlabel(L"\log_{10}(M ~ [M_\oplus])", fontsize=20)
 ylabel(L"\log_{10}(R ~ [R_\oplus])", fontsize=20)
 legend(fontsize=16)
@@ -109,7 +118,7 @@ M_final_all = deepcopy(M_init_all)
 M_final_all[.!bools_ret_all] = M_final_all[.!bools_ret_all] .- M_env_all[.!bools_ret_all] # final planet masses (Earth masses)
 
 R_final_all = deepcopy(R_init_all)
-R_final_all[.!bools_ret_all] = map(M -> draw_radius_given_mass_neil_rogers2020(M, radius_given_mass_pure_silicate_fit_seager2007(M), 0.05), M_final_all[.!bools_ret_all]) # final planet radii (Earth radii)
+R_final_all[.!bools_ret_all] = map(M -> draw_radius_given_mass_neil_rogers2020(radius_given_mass_pure_silicate_fit_seager2007(M), 0.05), M_final_all[.!bools_ret_all]) # final planet radii (Earth radii)
 
 
 
@@ -121,7 +130,7 @@ subplot(1,1,1)
 fill_between(log10.(M_array), log10.(μ_R_array .+ μ_R_array .* σ_R_array), log10.(μ_R_array .- μ_R_array .* σ_R_array), alpha=0.2, label="NR20, Model 2, scatter")
 plot(log10.(M_array), log10.(μ_R_array), label="NR20, Model 2, mean")
 plot(log10.(M_array), [log10(radius_given_mass_pure_iron_fit_seager2007(M)) for M in M_array], label="S07, pure-iron")
-plot(log10.(M_array), [log10(radius_given_mass_pure_silicate_fit_seager2007(M)) for M in M_array], label="S07, pure-silicate")
+plot(log10.(M_array), log10.(R_S07_silicate_array), label="S07, pure-silicate")
 sc = scatter(log10.(M_init_all), log10.(R_init_all), s=1, c=M_env_all./M_init_all, label="Sample population") #c=log10.(M_env_all)
 cbar = colorbar(sc)
 cbar.set_label(L"M_{\rm env,init} / M_{\rm init}", fontsize=16)
@@ -239,7 +248,7 @@ subplot(1,1,1)
 fill_between(log10.(M_array), log10.(μ_R_array .+ μ_R_array .* σ_R_array), log10.(μ_R_array .- μ_R_array .* σ_R_array), alpha=0.2, label="NR20, Model 2, scatter")
 plot(log10.(M_array), log10.(μ_R_array), label="NR20, Model 2, mean")
 plot(log10.(M_array), [log10(radius_given_mass_pure_iron_fit_seager2007(M)) for M in M_array], label="S07, pure-iron")
-plot(log10.(M_array), [log10(radius_given_mass_pure_silicate_fit_seager2007(M)) for M in M_array], label="S07, pure-silicate")
+plot(log10.(M_array), log10.(R_S07_silicate_array), label="S07, pure-silicate")
 scatter(log10.(M_final_all[.!bools_ret_all]), log10.(R_final_all[.!bools_ret_all]), s=1, color="r", label="Lost envelope")
 scatter(log10.(M_final_all[bools_ret_all]), log10.(R_final_all[bools_ret_all]), s=1, color="b", label="Retained envelope")
 xlim([log10(M_min), log10(M_max)])
