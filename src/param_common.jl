@@ -68,9 +68,30 @@ function add_sim_param_radius_distribution!(sim_param::SimParam)
     add_param_active(sim_param, "sigma_log_radius_in_cluster", 0.3)
 end
 
-function add_sim_param_mass_distribution!(sim_param::SimParam)
+function add_sim_param_mass_radius_distribution!(sim_param::SimParam)
     #add_param_fixed(sim_param, "generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table)
     add_param_fixed(sim_param, "generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below)
+end
+
+function add_sim_param_mass_and_radius_distribution_NR20!(sim_param::SimParam)
+    add_param_fixed(sim_param, "min_mass", 0.1) # Earth masses
+    add_param_fixed(sim_param, "max_mass", 1e4) # Earth masses
+    add_param_active(sim_param, "mean_ln_mass", 1.0) # ln(Earth masses)
+    add_param_active(sim_param, "sigma_ln_mass", 1.65) # ln(Earth masses)
+    add_param_active(sim_param, "norm_radius", 2.37) # Earth radii
+    add_param_active(sim_param, "break1_mass", 17.4) # Earth masses
+    add_param_active(sim_param, "break2_mass", 175.7) # Earth masses
+    add_param_active(sim_param, "power_law_γ0", 0.0)
+    add_param_active(sim_param, "power_law_γ1", 0.74)
+    add_param_active(sim_param, "power_law_γ2", 0.04)
+    add_param_active(sim_param, "power_law_σ0", 0.18)
+    add_param_active(sim_param, "power_law_σ1", 0.34)
+    add_param_active(sim_param, "power_law_σ2", 0.10)
+end
+
+function add_sim_param_photoevaporation_NR20!(sim_param::SimParam)
+    add_param_fixed(sim_param, "system_age", 5.) # Gyr
+    add_param_active(sim_param, "mass_loss_timescale_α", 7.98) # fudge factor
 end
 
 function add_sim_param_eccentricity_distribution!(sim_param::SimParam)
@@ -116,7 +137,7 @@ function setup_sim_param_clustered_amd_model()
     add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
     add_sim_param_period_distribution!(sim_param)
     add_sim_param_radius_distribution!(sim_param)
-    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_mass_radius_distribution!(sim_param)
     add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
     add_sim_param_stability_criteria_and_amd!(sim_param)
     add_sim_param_resonant_chains!(sim_param) # still needed for calculating which planets are near MMRs for now
@@ -133,12 +154,13 @@ function setup_sim_param_clustered_photoevap_amd_model()
     # Add the necessary model parameters:
     add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
     add_sim_param_period_distribution!(sim_param)
-    add_sim_param_radius_distribution!(sim_param)
-    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_mass_and_radius_distribution_NR20!(sim_param)
+    add_sim_param_radius_distribution!(sim_param) # adding this to set the radius bounds
+    #add_sim_param_mass_radius_distribution!(sim_param)
+    add_sim_param_photoevaporation_NR20!(sim_param)
     add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
     add_sim_param_stability_criteria_and_amd!(sim_param)
     add_sim_param_resonant_chains!(sim_param) # still needed for calculating which planets are near MMRs for now
-    #TODO: add the new model params
     
     return sim_param
 end
@@ -153,7 +175,7 @@ function setup_sim_param_resonant_chain_amd_model()
     add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
     add_sim_param_period_distribution!(sim_param)
     add_sim_param_radius_distribution!(sim_param)
-    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_mass_radius_distribution!(sim_param)
     add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
     add_sim_param_stability_criteria_and_amd!(sim_param)
     add_sim_param_resonant_chains!(sim_param)
@@ -171,7 +193,7 @@ function setup_sim_param_clustered_and_resonant_chain_amd_mixture_model()
     add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
     add_sim_param_period_distribution!(sim_param)
     add_sim_param_radius_distribution!(sim_param)
-    add_sim_param_mass_distribution!(sim_param)
+    add_sim_param_mass_radius_distribution!(sim_param)
     add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
     add_sim_param_stability_criteria_and_amd!(sim_param)
     add_sim_param_resonant_chains!(sim_param)
@@ -257,7 +279,9 @@ function write_model_params(f, sim_param::SimParam)
     end
     println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
 
-    generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
+    # TODO: clean this up and write params from NR20 model to file
+    #generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
+    generate_masses_func = "" # avoid writing M-R params for now
     if generate_masses_func == "generate_planet_mass_from_radius_powerlaw"
         println(f, "# mr_model: ", generate_masses_func)
         println(f, "# mr_power_index: ", get_real(sim_param, "mr_power_index"))

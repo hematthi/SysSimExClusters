@@ -160,25 +160,23 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
     generate_sizes = get_function(sim_param, "generate_sizes")
     min_radius::Float64 = get_real(sim_param, "min_radius")
     max_radius::Float64 = get_real(sim_param, "max_radius")
-    generate_planet_mass_from_radius = get_function(sim_param, "generate_planet_mass_from_radius")
 
     min_period::Float64 = get_real(sim_param, "min_period")
     max_period::Float64 = get_real(sim_param, "max_period")
     max_period_ratio = max_period/min_period
     sigma_logperiod_per_pl_in_cluster = get_real(sim_param, "sigma_logperiod_per_pl_in_cluster")
     
-    # HARDCODED PARAMS:
-    # TODO: after moving these to sim_param, consider also converting params for radii to Earth units (and only convert back to SysSim/Solar units in these functions)
-    M_min, M_max = 0.1, 1e4 # min and max planet masses to truncate at (Earth masses)
-    μ_M, σ_M = 1.00, 1.65 # ln(Earth masses)
-    C = 2.37 # Earth radii
-    M_break1 = 17.4 # Earth masses
-    M_break2 = 175.7 # Earth masses
-    γ0, γ1, γ2 = 0.00, 0.74, 0.04
-    σ0, σ1, σ2 = 0.18, 0.34, 0.10
+    # Note: these params are in Earth units
+    # TODO: consider also converting params for radii to Earth units (and only convert back to SysSim/Solar units in these functions)
+    min_M, max_M = get_real(sim_param, "min_mass"), get_real(sim_param, "max_mass")
+    μ_M, σ_M = get_real(sim_param, "mean_ln_mass"), get_real(sim_param, "sigma_ln_mass")
+    C = get_real(sim_param, "norm_radius")
+    M_break1, M_break2 = get_real(sim_param, "break1_mass"), get_real(sim_param, "break2_mass")
+    γ0, γ1, γ2 = get_real(sim_param, "power_law_γ0"), get_real(sim_param, "power_law_γ1"), get_real(sim_param, "power_law_γ2")
+    σ0, σ1, σ2 = get_real(sim_param, "power_law_σ0"), get_real(sim_param, "power_law_σ1"), get_real(sim_param, "power_law_σ2")
 
     # Draw initial masses and radii:
-    M_init_dist = Truncated(LogNormal(μ_M, σ_M), M_min, M_max)
+    M_init_dist = Truncated(LogNormal(μ_M, σ_M), min_M, max_M)
     
     #M_init = rand(M_init_dist, n)
     #R_init = map(M -> draw_radius_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2), M_init)
@@ -373,10 +371,10 @@ function generate_planetary_system_clustered_periods_and_sizes_photoevap_distrib
     
     # Implement envelope mass loss via photoevaporation:
     
-    # HARDCODED PARAMETERS FOR NOW:
+    t_age = get_real(sim_param, "system_age") # age of system (Gyr)
+    α = get_real(sim_param, "mass_loss_timescale_α") # fudge factor for mass-loss timescale
+    
     # NOTE/TODO: the functions for implementing photoevaporation use Earth units but the masses and radii are in Solar units at this point; figure out a way to do this more consistently and conveniently
-    t_age = 5. # age of system (Gyr)
-    α = 7.98 # fudge factor for mass-loss timescale
     
     # Convert from Solar units to Earth units for this part:
     M_init_list /= ExoplanetsSysSim.earth_mass
