@@ -86,7 +86,7 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
 
     # If single planet in cluster:
     if n==1
-        R = generate_sizes(star, sim_param)
+        R = generate_sizes(star, sim_param)*ExoplanetsSysSim.earth_radius
         mass = [generate_planet_mass_from_radius(R[1], sim_param)]
         P = [1.0] # generate_periods_power_law(star,sim_param)
         return (P, R, mass)
@@ -95,8 +95,8 @@ function generate_stable_cluster(star::StarT, sim_param::SimParam; n::Int64=1) w
     # If reach here, then at least 2 planets in cluster
 
     # Draw radii and masses:
-    mean_R = generate_sizes(star,sim_param)[1]
-    Rdist = Truncated(LogNormal(log(mean_R),sigma_log_radius_in_cluster), min_radius, max_radius) # clustered planet sizes
+    mean_R = generate_sizes(star,sim_param)[1]*ExoplanetsSysSim.earth_radius
+    Rdist = Truncated(LogNormal(log(mean_R),sigma_log_radius_in_cluster), min_radius*ExoplanetsSysSim.earth_radius, max_radius*ExoplanetsSysSim.earth_radius) # clustered planet sizes
     R = rand(Rdist, n)
     mass = map(r -> generate_planet_mass_from_radius(r, sim_param), R)
     #println("# Rp = ", R)
@@ -210,8 +210,8 @@ function generate_resonant_chain(star::StarT, sim_param::SimParam; n::Int64=2) w
 
     # TODO: consider checking our stability criteria and putting this into a loop to resample until they are met
     # Draw radii and masses:
-    mean_R = generate_sizes(star,sim_param)[1]
-    Rdist = Truncated(LogNormal(log(mean_R),sigma_log_radius_in_cluster), min_radius, max_radius) # clustered planet sizes
+    mean_R = generate_sizes(star,sim_param)[1]*ExoplanetsSysSim.earth_radius
+    Rdist = Truncated(LogNormal(log(mean_R),sigma_log_radius_in_cluster), min_radius*ExoplanetsSysSim.earth_radius, max_radius*ExoplanetsSysSim.earth_radius) # clustered planet sizes
     R = rand(Rdist, n)
     mass = map(r -> generate_planet_mass_from_radius(r, sim_param), R)
 

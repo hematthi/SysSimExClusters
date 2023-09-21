@@ -40,6 +40,29 @@ function mean_radius_and_scatter_given_mass_neil_rogers2020(M::Real; C::Real, M_
     return (μ, σ)
 end
 
+function mean_radius_and_scatter_given_mass_neil_rogers2020_one_break(M::Real; C::Real, M_break::Real, γ0::Real, γ1::Real, σ0::Real, σ1::Real)
+
+    # M: planet mass (Earth masses)
+    # C: normalization (Earth radii)
+    # M_break: break point in planet mass
+    # γ0: power-law slope for masses below break
+    # γ1: power-law slope for masses above break
+    # σ0: scatter in radius for masses below break
+    # σ1: scatter in radius for masses above break
+    
+    # Power-laws in each mass regime:
+    μ0 = C*M^γ0
+    μ1 = C*M_break^(γ0-γ1)*M^γ1
+    
+    # Smooth between the power-laws using a logistic function:
+    S = 1/(1 + exp(-5*(log(M)-log(M_break))))
+    
+    μ = (1-S)*μ0 + S*μ1
+    σ = (1-S)*σ0 + S*σ1
+    
+    return (μ, σ)
+end
+
 
 function draw_radius_given_mass_neil_rogers2020(μ::Real, σ::Real)
     Rdist = Normal(μ, σ*μ) # normal distribution with a fractional scatter
@@ -50,6 +73,12 @@ function draw_radius_given_mass_neil_rogers2020(M::Real; C::Real, M_break1::Real
     # Wrapper function for the above
     
     μ, σ = mean_radius_and_scatter_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2)
+    return draw_radius_given_mass_neil_rogers2020(μ, σ)
+end
+
+function draw_radius_given_mass_neil_rogers2020_one_break(M::Real; C::Real, M_break::Real, γ0::Real, γ1::Real, σ0::Real, σ1::Real)
+    
+    μ, σ = mean_radius_and_scatter_given_mass_neil_rogers2020_one_break(M; C=C, M_break=M_break, γ0=γ0, γ1=γ1, σ0=σ0, σ1=σ1)
     return draw_radius_given_mass_neil_rogers2020(μ, σ)
 end
 
@@ -150,33 +179,36 @@ end
 
 ##### Functions for simulating a multiplanet model with the NR20 components:
 
-##### NOTE: hardcoding all new model parameters for now; add to sim_param in the future
 ##### NOTE: will need to generate stable clusters and draw the period scales (using initial masses) BEFORE implementing the photoevaporation component (since photoevaporation depends on the period/flux)
 
 function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimParam; n::Int64=1) where {StarT<:StarAbstract}
     @assert(n >= 1)
 
     # Load functions and model parameters:
-    generate_sizes = get_function(sim_param, "generate_sizes")
-    min_radius::Float64 = get_real(sim_param, "min_radius")
-    max_radius::Float64 = get_real(sim_param, "max_radius")
-
-    min_period::Float64 = get_real(sim_param, "min_period")
-    max_period::Float64 = get_real(sim_param, "max_period")
+    min_period = get_real(sim_param, "min_period")
+    max_period = get_real(sim_param, "max_period")
     max_period_ratio = max_period/min_period
     sigma_logperiod_per_pl_in_cluster = get_real(sim_param, "sigma_logperiod_per_pl_in_cluster")
     
     # Note: these params are in Earth units
-    # TODO: consider also converting params for radii to Earth units (and only convert back to SysSim/Solar units in these functions)
-    min_M, max_M = get_real(sim_param, "min_mass"), get_real(sim_param, "max_mass")
-    μ_M, σ_M = get_real(sim_param, "mean_ln_mass"), get_real(sim_param, "sigma_ln_mass")
+    min_mass = get_real(sim_param, "min_mass")
+    max_mass = get_real(sim_param, "max_mass")
+    min_radius = get_real(sim_param, "min_radius")
+    max_radius = get_real(sim_param, "max_radius")
+    μ_mass = get_real(sim_param, "mean_ln_mass")
+    σ_mass = get_real(sim_param, "sigma_ln_mass")
     C = get_real(sim_param, "norm_radius")
-    M_break1, M_break2 = get_real(sim_param, "break1_mass"), get_real(sim_param, "break2_mass")
-    γ0, γ1, γ2 = get_real(sim_param, "power_law_γ0"), get_real(sim_param, "power_law_γ1"), get_real(sim_param, "power_law_γ2")
-    σ0, σ1, σ2 = get_real(sim_param, "power_law_σ0"), get_real(sim_param, "power_law_σ1"), get_real(sim_param, "power_law_σ2")
+    M_break1 = get_real(sim_param, "break1_mass")
+    #M_break2 = get_real(sim_param, "break2_mass")
+    γ0 = get_real(sim_param, "power_law_γ0")
+    γ1 = get_real(sim_param, "power_law_γ1")
+    #γ2 = get_real(sim_param, "power_law_γ2")
+    σ0 = get_real(sim_param, "power_law_σ0")
+    σ1 = get_real(sim_param, "power_law_σ1")
+    #σ2 = get_real(sim_param, "power_law_σ2")
 
     # Draw initial masses and radii:
-    M_init_dist = Truncated(LogNormal(μ_M, σ_M), min_M, max_M)
+    M_init_dist = Truncated(LogNormal(μ_mass, σ_mass), min_mass, max_mass)
     
     #M_init = rand(M_init_dist, n)
     #R_init = map(M -> draw_radius_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2), M_init)
@@ -187,8 +219,8 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
         radius_in_bounds = false
         while !radius_in_bounds
             M_init[i] = rand(M_init_dist)
-            R_init[i] = draw_radius_given_mass_neil_rogers2020(M_init[i]; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2)
-            radius_in_bounds = true ? (min_radius < R_init[i]*ExoplanetsSysSim.earth_radius < max_radius) : false
+            R_init[i] = draw_radius_given_mass_neil_rogers2020_one_break(M_init[i]; C=C, M_break=M_break1, γ0=γ0, γ1=γ1, σ0=σ0, σ1=σ1)
+            radius_in_bounds = true ? (min_radius < R_init[i] < max_radius) : false
         end
     end
     
@@ -372,7 +404,7 @@ function generate_planetary_system_clustered_periods_and_sizes_photoevap_distrib
     # Implement envelope mass loss via photoevaporation:
     
     t_age = get_real(sim_param, "system_age") # age of system (Gyr)
-    α = get_real(sim_param, "mass_loss_timescale_α") # fudge factor for mass-loss timescale
+    α = get_real(sim_param, "α_pret") # fudge factor for envelope retention probability/mass-loss timescale
     
     # NOTE/TODO: the functions for implementing photoevaporation use Earth units but the masses and radii are in Solar units at this point; figure out a way to do this more consistently and conveniently
     

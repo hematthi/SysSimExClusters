@@ -59,9 +59,9 @@ end
 
 function add_sim_param_radius_distribution!(sim_param::SimParam)
     add_param_fixed(sim_param, "generate_sizes", ExoplanetsSysSim.generate_sizes_broken_power_law) # if "generate_sizes_power_law", then takes "power_law_r"; if "generate_sizes_broken_power_law", then takes "power_law_r1", "power_law_r2", and "break_radius"
-    add_param_fixed(sim_param, "min_radius", 0.5*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param, "max_radius", 10.0*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param, "break_radius", 3.0*ExoplanetsSysSim.earth_radius)
+    add_param_fixed(sim_param, "min_radius", 0.5)
+    add_param_fixed(sim_param, "max_radius", 10.0)
+    add_param_fixed(sim_param, "break_radius", 3.0)
     #add_param_fixed(sim_param, "power_law_r", -2.5)
     add_param_active(sim_param, "power_law_r1", -1.4)
     add_param_active(sim_param, "power_law_r2", -5.2)
@@ -75,23 +75,25 @@ end
 
 function add_sim_param_mass_and_radius_distribution_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "min_mass", 0.1) # Earth masses
-    add_param_fixed(sim_param, "max_mass", 1e4) # Earth masses
+    add_param_fixed(sim_param, "max_mass", 1e3) # Earth masses
+    add_param_fixed(sim_param, "min_radius", 0.5) # Earth radii
+    add_param_fixed(sim_param, "max_radius", 10.0) # Earth radii
     add_param_active(sim_param, "mean_ln_mass", 1.0) # ln(Earth masses)
     add_param_active(sim_param, "sigma_ln_mass", 1.65) # ln(Earth masses)
     add_param_active(sim_param, "norm_radius", 2.37) # Earth radii
     add_param_active(sim_param, "break1_mass", 17.4) # Earth masses
-    add_param_active(sim_param, "break2_mass", 175.7) # Earth masses
+    #add_param_active(sim_param, "break2_mass", 175.7) # Earth masses
     add_param_active(sim_param, "power_law_γ0", 0.0)
     add_param_active(sim_param, "power_law_γ1", 0.74)
-    add_param_active(sim_param, "power_law_γ2", 0.04)
+    #add_param_active(sim_param, "power_law_γ2", 0.04)
     add_param_active(sim_param, "power_law_σ0", 0.18)
     add_param_active(sim_param, "power_law_σ1", 0.34)
-    add_param_active(sim_param, "power_law_σ2", 0.10)
+    #add_param_active(sim_param, "power_law_σ2", 0.10)
 end
 
 function add_sim_param_photoevaporation_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "system_age", 5.) # Gyr
-    add_param_active(sim_param, "mass_loss_timescale_α", 7.98) # fudge factor
+    add_param_active(sim_param, "α_pret", 4.) # fudge factor for the envelope retention probability
 end
 
 function add_sim_param_eccentricity_distribution!(sim_param::SimParam)
@@ -155,8 +157,6 @@ function setup_sim_param_clustered_photoevap_amd_model()
     add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param)
     add_sim_param_period_distribution!(sim_param)
     add_sim_param_mass_and_radius_distribution_NR20!(sim_param)
-    add_sim_param_radius_distribution!(sim_param) # adding this to set the radius bounds
-    #add_sim_param_mass_radius_distribution!(sim_param)
     add_sim_param_photoevaporation_NR20!(sim_param)
     add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
     add_sim_param_stability_criteria_and_amd!(sim_param)
@@ -266,20 +266,22 @@ function write_model_params(f, sim_param::SimParam)
     end
     println(f, "# sigma_logperiod_per_pl_in_cluster: ", get_real(sim_param, "sigma_logperiod_per_pl_in_cluster"))
 
-    generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
+    ##### TODO: clean this up and write params from NR20 model to file
+    
+    #generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
+    generate_sizes_func = "" # avoid writing M-R params for now
     println(f, "# generate_sizes: ", generate_sizes_func)
-    println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius")/ExoplanetsSysSim.earth_radius)
-    println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius")/ExoplanetsSysSim.earth_radius)
+    println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius"))
+    println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius"))
     if generate_sizes_func == "generate_sizes_power_law"
         println(f, "# power_law_r: ", get_real(sim_param, "power_law_r"))
     elseif generate_sizes_func == "generate_sizes_broken_power_law"
-        println(f, "# break_radius (R_earth): ", get_real(sim_param, "break_radius")/ExoplanetsSysSim.earth_radius)
+        println(f, "# break_radius (R_earth): ", get_real(sim_param, "break_radius"))
         println(f, "# power_law_r1: ", get_real(sim_param, "power_law_r1"))
         println(f, "# power_law_r2: ", get_real(sim_param, "power_law_r2"))
     end
-    println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
+    #println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
 
-    # TODO: clean this up and write params from NR20 model to file
     #generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
     generate_masses_func = "" # avoid writing M-R params for now
     if generate_masses_func == "generate_planet_mass_from_radius_powerlaw"
