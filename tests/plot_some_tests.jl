@@ -102,9 +102,19 @@ M_init_dist = LogNormal(μ_M, σ_M) # the distribution of initial planet masses
 # Draw a simple population:
 N_pl = 10000 # number of planets to draw
 
-M_init_all = rand(M_init_dist, N_pl) # initial planet masses (Earth masses)
-R_init_all = map(M -> draw_radius_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2), M_init_all) # initial planet radii (Earth radii)
-R_init_all[R_init_all .< R_min] .= R_min
+#M_init_all = rand(M_init_dist, N_pl) # initial planet masses (Earth masses)
+#R_init_all = map(M -> draw_radius_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2), M_init_all) # initial planet radii (Earth radii)
+#R_init_all[R_init_all .< R_min] .= R_min
+
+# NEW # If instead of drawing initial M,R from NR20, draw initial R,M from H20:
+sim_param = setup_sim_param_model()
+#add_param_fixed(sim_param, "generate_planet_mass_from_radius", generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below)
+generate_planet_mass_from_radius = generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below #get_function(sim_param, "generate_planet_mass_from_radius")
+
+R_init_all = ExoplanetsSysSim.draw_broken_power_law(-1.4, -5.2, 0.5, 10., 3., N_pl) # Earth radii
+M_init_all = map(r -> generate_planet_mass_from_radius(r*ExoplanetsSysSim.earth_radius, sim_param), R_init_all) /ExoplanetsSysSim.earth_mass # Earth masses
+# end NEW #
+
 M_env_all = map(M -> envelope_mass_smoothed_low_high_neil_rogers2020(M), M_init_all) # initial envelope masses (Earth masses)
 
 P_all = ExoplanetsSysSim.draw_broken_power_law(β1, β2, P_min, P_max, P_break, N_pl) # orbital periods (days)
