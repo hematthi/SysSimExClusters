@@ -395,7 +395,7 @@ end
 
 
 """
-    calc_summary_stats_cuml_period_depth_duration!(css, cat_obs, sim_param)
+    calc_summary_stats_periods_depths_durations_radii!(css, cat_obs, sim_param)
 
 Compute the lists of periods, transit depths, transit durations, and normalized transit durations in the observed catalog and add them to the summary statistics (`css.stat`).
 
@@ -413,7 +413,7 @@ Compute the lists of periods, transit depths, transit durations, and normalized 
 - `depth_below_list::Vector{Float64}`: list of transit depths below the photo-evaporation boundary.
 Also writes the period, depth, duration, and normalized duration lists to `css.stat`, and writes the depth lists above and below the photo-evaporation boundary to `css.cache`.
 """
-function calc_summary_stats_cuml_period_depth_duration!(css::CatalogSummaryStatistics, cat_obs::KeplerObsCatalog, sim_param::SimParam)
+function calc_summary_stats_periods_depths_durations_radii!(css::CatalogSummaryStatistics, cat_obs::KeplerObsCatalog, sim_param::SimParam)
     # Allocate arrays to store values for each tranet:
     num_tranets = calc_summary_stats_num_tranets!(css, cat_obs, sim_param)
     period_list = zeros(num_tranets)
@@ -422,6 +422,7 @@ function calc_summary_stats_cuml_period_depth_duration!(css::CatalogSummaryStati
     duration_norm_circ_list = zeros(num_tranets)
     duration_norm_circ_singles_list = Float64[]
     duration_norm_circ_multis_list = Float64[]
+    radius_list = zeros(num_tranets)
     #weight_list = ones(num_tranets)
 
     depth_above_list = Float64[] # list to be filled with the transit depths of planets above the photoevaporation boundary in Carrera et al 2018
@@ -448,6 +449,7 @@ function calc_summary_stats_cuml_period_depth_duration!(css::CatalogSummaryStati
             #weight_list[i] = 1.0
 
             radius_earths, period = (sqrt(targ.obs[j].depth)*targ.star.radius) / ExoplanetsSysSim.earth_radius, targ.obs[j].period
+            radius_list[i] = radius_earths
             if photoevap_boundary_Carrera2018(radius_earths, period) == 1
                 append!(depth_above_list, targ.obs[j].depth)
             elseif photoevap_boundary_Carrera2018(radius_earths, period) == 0
@@ -465,6 +467,7 @@ function calc_summary_stats_cuml_period_depth_duration!(css::CatalogSummaryStati
     css.stat["durations_norm_circ"] = duration_norm_circ_list
     css.stat["durations_norm_circ_singles"] = duration_norm_circ_singles_list
     css.stat["durations_norm_circ_multis"] = duration_norm_circ_multis_list
+    css.stat["radii"] = radius_list
     #css.cache["weight list"] = weight_list
 
     css.cache["depths_above"] = depth_above_list
@@ -492,7 +495,7 @@ Compute the transit depths lists in the observed catalog, split by planets above
 Also writes these to `css.stat`.
 """
 function calc_summary_stats_depths_photoevap_boundary_Carrera2018!(css::CatalogSummaryStatistics, cat_obs::KeplerObsCatalog, sim_param::SimParam)
-    depth_above_list, depth_below_list = calc_summary_stats_cuml_period_depth_duration!(css, cat_obs, sim_param)[5:6]
+    depth_above_list, depth_below_list = calc_summary_stats_periods_depths_durations_radii!(css, cat_obs, sim_param)[5:6]
     css.stat["depths_above"] = depth_above_list
     css.stat["depths_below"] = depth_below_list
     return (depth_above_list, depth_below_list)
@@ -644,7 +647,7 @@ function calc_summary_stats_model(cat_obs::KeplerObsCatalog, sim_param::SimParam
     calc_summary_stats_num_targets!(css, cat_obs, sim_param)
     calc_summary_stats_num_tranets!(css, cat_obs, sim_param)
     calc_summary_stats_num_n_tranet_systems!(css, cat_obs, sim_param)
-    calc_summary_stats_cuml_period_depth_duration!(css, cat_obs, sim_param)
+    calc_summary_stats_periods_depths_durations_radii!(css, cat_obs, sim_param)
     calc_summary_stats_depths_photoevap_boundary_Carrera2018!(css, cat_obs, sim_param) # to also compute arrays of depths above and below photoevaporation boundary
     calc_summary_stats_period_radius_ratios_neighbors!(css, cat_obs, sim_param)
     calc_summary_stats_radius_ratios_neighbors_photoevap_boundary_Carrera2018!(css, cat_obs, sim_param) # to also compute arrays of radius ratios above, below, and across photoevaporation boundary

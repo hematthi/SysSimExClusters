@@ -16,7 +16,7 @@ num_targs = 86760
 max_incl_sys = 0.
 num_evals_weights = 100
 
-file_name = "Clustered_P_R_split_stars_weights_ADmod_$(AD_mod)_targs$(num_targs)_evals$(num_evals_weights)_all_pairs.txt"
+file_name = "Maximum_AMD_model_split_stars_weights_ADmod_$(AD_mod)_targs$(num_targs)_evals$(num_evals_weights)_all_pairs.txt"
 
 f = open(file_name, "w")
 println(f, "# All initial parameters:")
