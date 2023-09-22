@@ -12,8 +12,8 @@ function has_conditional_planet(ps::PlanetarySystem, sim_param::SimParam)
     found_cond_planet = false
     for pl in 1:length(ps.planet)
         period = ps.orbit[pl].P
-        radius = ps.planet[pl].radius
-        mass = ps.planet[pl].mass
+        radius = ps.planet[pl].radius / ExoplanetsSysSim.earth_radius # Earth radii
+        mass = ps.planet[pl].mass / ExoplanetsSysSim.earth_mass # Earth masses
         in_period_range = cond_period_min <= period <= cond_period_max
         in_radius_range = cond_radius_min <= radius <= cond_radius_max
         in_mass_range = cond_mass_min <= mass <= cond_mass_max

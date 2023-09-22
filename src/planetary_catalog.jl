@@ -66,8 +66,9 @@ function keep_planet_candidates_given_sim_param(planet_catalog::DataFrame; sim_p
         end
     end
 
-    planets_keep = planets_keep[(planets_keep[!,:koi_period] .> get_real(sim_param,"min_period")) .& (planets_keep[!,:koi_period] .< get_real(sim_param,"max_period")), :] # to make additional cuts in period P to be comparable to our simulated sample
-    planets_keep = planets_keep[(planets_keep[!,:koi_prad] .> get_real(sim_param,"min_radius")/ExoplanetsSysSim.earth_radius) .& (planets_keep[!,:koi_prad] .< get_real(sim_param,"max_radius")/ExoplanetsSysSim.earth_radius) .& (.~ismissing.(planets_keep[!,:koi_prad])), :] # to make additional cuts in planetary radii to be comparable to our simulated sample
+    # To make additional cuts in periods and radii to be comparable to our simulated sample:
+    planets_keep = planets_keep[(planets_keep[!,:koi_period] .> get_real(sim_param,"min_period")) .& (planets_keep[!,:koi_period] .< get_real(sim_param,"max_period")), :]
+    planets_keep = planets_keep[(planets_keep[!,:koi_prad] .> get_real(sim_param,"min_radius")) .& (planets_keep[!,:koi_prad] .< get_real(sim_param,"max_radius")) .& (.~ismissing.(planets_keep[!,:koi_prad])), :]
     planets_keep[!,:koi_period] = collect(skipmissing(planets_keep[!,:koi_period]))
     planets_keep[!,:koi_prad] = collect(skipmissing(planets_keep[!,:koi_prad]))
     println("After applying our period and radius cuts (final count): ", size(planets_keep, 1))

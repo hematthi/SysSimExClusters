@@ -114,7 +114,7 @@ function add_sim_param_stability_criteria_and_amd!(sim_param::SimParam)
 end
 
 function add_sim_param_resonant_chains!(sim_param::SimParam)
-    add_param_fixed(sim_param, "resonance_width", 0.02)
+    add_param_fixed(sim_param, "resonance_width", 0.05)
     add_param_fixed(sim_param, "period_ratios_mmr", [2.0, 1.5, 4/3, 5/4])
 end
 
@@ -122,10 +122,10 @@ function add_sim_param_conditionals!(sim_param::SimParam)
     add_param_fixed(sim_param, "max_attempts_cond", 10000)
     add_param_fixed(sim_param, "cond_period_min", 10.0)
     add_param_fixed(sim_param, "cond_period_max", 20.0)
-    add_param_fixed(sim_param, "cond_radius_min", 1.5*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param, "cond_radius_max", 2.0*ExoplanetsSysSim.earth_radius)
-    add_param_fixed(sim_param, "cond_mass_min", 0.0*ExoplanetsSysSim.earth_mass)
-    add_param_fixed(sim_param, "cond_mass_max", 10.0*ExoplanetsSysSim.earth_mass)
+    add_param_fixed(sim_param, "cond_radius_min", 1.5)
+    add_param_fixed(sim_param, "cond_radius_max", 2.0)
+    add_param_fixed(sim_param, "cond_mass_min", 0.0)
+    add_param_fixed(sim_param, "cond_mass_max", 10.0)
     add_param_fixed(sim_param, "cond_also_transits", true)
 end
 
@@ -204,8 +204,8 @@ end
 
 function setup_sim_param_model()
     # Setup the sim params for the desired model:
-    #sim_param = setup_sim_param_clustered_amd_model()
-    sim_param = setup_sim_param_clustered_photoevap_amd_model()
+    sim_param = setup_sim_param_clustered_amd_model()
+    #sim_param = setup_sim_param_clustered_photoevap_amd_model()
     #sim_param = setup_sim_param_resonant_chain_amd_model()
     #sim_param = setup_sim_param_clustered_and_resonant_chain_amd_mixture_model()
 
@@ -268,8 +268,8 @@ function write_model_params(f, sim_param::SimParam)
 
     ##### TODO: clean this up and write params from NR20 model to file
     
-    #generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
-    generate_sizes_func = "" # avoid writing M-R params for now
+    generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
+    #generate_sizes_func = "" # avoid writing M-R params for now
     println(f, "# generate_sizes: ", generate_sizes_func)
     println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius"))
     println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius"))
@@ -282,8 +282,8 @@ function write_model_params(f, sim_param::SimParam)
     end
     #println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
 
-    #generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
-    generate_masses_func = "" # avoid writing M-R params for now
+    generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
+    #generate_masses_func = "" # avoid writing M-R params for now
     if generate_masses_func == "generate_planet_mass_from_radius_powerlaw"
         println(f, "# mr_model: ", generate_masses_func)
         println(f, "# mr_power_index: ", get_real(sim_param, "mr_power_index"))
@@ -321,10 +321,10 @@ function write_model_params(f, sim_param::SimParam)
         println(f, "# max_attempts_cond: ", get_int(sim_param, "max_attempts_cond"))
         println(f, "# cond_period_min: ", get_real(sim_param, "cond_period_min"))
         println(f, "# cond_period_max: ", get_real(sim_param, "cond_period_max"))
-        println(f, "# cond_radius_min (R_earth): ", get_real(sim_param, "cond_radius_min")/ExoplanetsSysSim.earth_radius)
-        println(f, "# cond_radius_max (R_earth): ", get_real(sim_param, "cond_radius_max")/ExoplanetsSysSim.earth_radius)
-        println(f, "# cond_mass_min (M_earth): ", get_real(sim_param, "cond_mass_min")/ExoplanetsSysSim.earth_mass)
-        println(f, "# cond_mass_max (M_earth): ", get_real(sim_param, "cond_mass_max")/ExoplanetsSysSim.earth_mass)
+        println(f, "# cond_radius_min (R_earth): ", get_real(sim_param, "cond_radius_min"))
+        println(f, "# cond_radius_max (R_earth): ", get_real(sim_param, "cond_radius_max"))
+        println(f, "# cond_mass_min (M_earth): ", get_real(sim_param, "cond_mass_min"))
+        println(f, "# cond_mass_max (M_earth): ", get_real(sim_param, "cond_mass_max"))
         println(f, "# cond_also_transits: ", get_bool(sim_param, "cond_also_transits"))
     end
 
