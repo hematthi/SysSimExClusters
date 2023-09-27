@@ -35,8 +35,8 @@ end
 
 function add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_param::SimParam)
     #add_param_active(sim_param, "f_stars_with_planets_attempted", 0.6)
-    add_param_active(sim_param, "f_stars_with_planets_attempted_color_slope", 0.9)
-    add_param_active(sim_param, "f_stars_with_planets_attempted_at_med_color", 0.88)
+    add_param_fixed(sim_param, "f_stars_with_planets_attempted_color_slope", 0.9)
+    add_param_fixed(sim_param, "f_stars_with_planets_attempted_at_med_color", 0.88)
     add_param_fixed(sim_param, "med_color", 0.81)
     add_param_fixed(sim_param, "generate_num_clusters", generate_num_clusters_ZTP)
     add_param_fixed(sim_param, "generate_num_planets_in_cluster", generate_num_planets_in_cluster_ZTP)
@@ -74,6 +74,7 @@ function add_sim_param_mass_radius_distribution!(sim_param::SimParam)
 end
 
 function add_sim_param_mass_and_radius_distribution_NR20!(sim_param::SimParam)
+    add_param_fixed(sim_param, "mass_radius_model_name", "mass_radius_NR20")
     add_param_fixed(sim_param, "min_mass", 0.1) # Earth masses
     add_param_fixed(sim_param, "max_mass", 1e3) # Earth masses
     add_param_fixed(sim_param, "min_radius", 0.5) # Earth radii
@@ -93,12 +94,12 @@ end
 
 function add_sim_param_photoevaporation_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "system_age", 5.) # Gyr
-    add_param_active(sim_param, "α_pret", 4.) # fudge factor for the envelope retention probability
+    add_param_fixed(sim_param, "α_pret", 4.) # fudge factor for the envelope retention probability
 end
 
 function add_sim_param_eccentricity_distribution!(sim_param::SimParam)
     add_param_fixed(sim_param, "generate_e_omega", ExoplanetsSysSim.generate_e_omega_rayleigh)
-    add_param_active(sim_param, "sigma_hk", 0.25)
+    add_param_fixed(sim_param, "sigma_hk", 0.25)
 end
 
 function add_sim_param_inclination_distribution!(sim_param::SimParam)
@@ -108,7 +109,7 @@ function add_sim_param_inclination_distribution!(sim_param::SimParam)
 end
 
 function add_sim_param_stability_criteria_and_amd!(sim_param::SimParam)
-    add_param_active(sim_param, "num_mutual_hill_radii", 10.0)
+    add_param_fixed(sim_param, "num_mutual_hill_radii", 10.0)
     add_param_fixed(sim_param, "f_amd_crit", 1.0) # fraction of critical AMD to distribute (can be greater than 1)
     #add_param_fixed(sim_param, "distribute_amd", distribute_amd_per_mass) # TODO: add param for defining how to distribute the AMD amongst the planets (per unit mass or randomly per planet)
 end
@@ -204,8 +205,8 @@ end
 
 function setup_sim_param_model()
     # Setup the sim params for the desired model:
-    sim_param = setup_sim_param_clustered_amd_model()
-    #sim_param = setup_sim_param_clustered_photoevap_amd_model()
+    #sim_param = setup_sim_param_clustered_amd_model()
+    sim_param = setup_sim_param_clustered_photoevap_amd_model()
     #sim_param = setup_sim_param_resonant_chain_amd_model()
     #sim_param = setup_sim_param_clustered_and_resonant_chain_amd_mixture_model()
 
@@ -266,41 +267,60 @@ function write_model_params(f, sim_param::SimParam)
     end
     println(f, "# sigma_logperiod_per_pl_in_cluster: ", get_real(sim_param, "sigma_logperiod_per_pl_in_cluster"))
 
-    ##### TODO: clean this up and write params from NR20 model to file
-    
-    generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
-    #generate_sizes_func = "" # avoid writing M-R params for now
-    println(f, "# generate_sizes: ", generate_sizes_func)
-    println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius"))
-    println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius"))
-    if generate_sizes_func == "generate_sizes_power_law"
-        println(f, "# power_law_r: ", get_real(sim_param, "power_law_r"))
-    elseif generate_sizes_func == "generate_sizes_broken_power_law"
-        println(f, "# break_radius (R_earth): ", get_real(sim_param, "break_radius"))
-        println(f, "# power_law_r1: ", get_real(sim_param, "power_law_r1"))
-        println(f, "# power_law_r2: ", get_real(sim_param, "power_law_r2"))
-    end
-    #println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
+    ##### TODO: clean this up:
+    mass_radius_model_name = get(sim_param, "mass_radius_model_name", "")
+    if mass_radius_model_name == "mass_radius_NR20"
+        println(f, "# min_mass (M_earth): ", get_real(sim_param, "min_mass"))
+        println(f, "# max_mass (M_earth): ", get_real(sim_param, "max_mass"))
+        println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius"))
+        println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius"))
+        println(f, "# mean_ln_mass (ln M_earth): ", get_real(sim_param, "mean_ln_mass"))
+        println(f, "# sigma_ln_mass (ln M_earth): ", get_real(sim_param, "sigma_ln_mass"))
+        println(f, "# norm_radius (R_earth): ", get_real(sim_param, "norm_radius"))
+        println(f, "# break_mass (M_earth): ", get_real(sim_param, "break1_mass"))
+        println(f, "# power_law_γ0: ", get_real(sim_param, "power_law_γ0"))
+        println(f, "# power_law_γ1: ", get_real(sim_param, "power_law_γ1"))
+        println(f, "# power_law_σ0: ", get_real(sim_param, "power_law_σ0"))
+        println(f, "# power_law_σ1: ", get_real(sim_param, "power_law_σ1"))
+        
+        println(f, "# system_age (Gyr): ", get_real(sim_param, "system_age"))
+        println(f, "# α_pret: ", get_real(sim_param, "α_pret"))
+    else
+        #generate_sizes_func = string(get_function(sim_param, "generate_sizes"))
+        generate_sizes_func = "" # avoid writing M-R params for now
+        println(f, "# generate_sizes: ", generate_sizes_func)
+        println(f, "# min_radius (R_earth): ", get_real(sim_param, "min_radius"))
+        println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius"))
+        if generate_sizes_func == "generate_sizes_power_law"
+            println(f, "# power_law_r: ", get_real(sim_param, "power_law_r"))
+        elseif generate_sizes_func == "generate_sizes_broken_power_law"
+            println(f, "# break_radius (R_earth): ", get_real(sim_param, "break_radius"))
+            println(f, "# power_law_r1: ", get_real(sim_param, "power_law_r1"))
+            println(f, "# power_law_r2: ", get_real(sim_param, "power_law_r2"))
+        end
+        #println(f, "# sigma_log_radius_in_cluster: ", get_real(sim_param, "sigma_log_radius_in_cluster"))
 
-    generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
-    #generate_masses_func = "" # avoid writing M-R params for now
-    if generate_masses_func == "generate_planet_mass_from_radius_powerlaw"
-        println(f, "# mr_model: ", generate_masses_func)
-        println(f, "# mr_power_index: ", get_real(sim_param, "mr_power_index"))
-        println(f, "# mr_max_mass (M_earth): ", get_real(sim_param, "mr_max_mass")/ExoplanetsSysSim.earth_mass)
-    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018"
-        println(f, "# mr_model: Ning2018")
-    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table"
-        println(f, "# mr_model: Ning2018_table")
-    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table_above_normal_density_earthlike_rocky_below"
-        println(f, "# radius_switch (R_earth): ", radius_switch)
-        println(f, "# mr_model: Ning2018_table (above radius_switch)")
-        println(f, "# mr_model: Normal density around Earthlike rocky (below radius_switch)")
-    elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below"
-        println(f, "# radius_switch (R_earth): ", radius_switch)
-        println(f, "# mr_model: Ning2018_table (above radius_switch)")
-        println(f, "# mr_model: Lognormal mass around Earthlike rocky (below radius_switch)")
+        #generate_masses_func = string(get_function(sim_param, "generate_planet_mass_from_radius"))
+        generate_masses_func = "" # avoid writing M-R params for now
+        if generate_masses_func == "generate_planet_mass_from_radius_powerlaw"
+            println(f, "# mr_model: ", generate_masses_func)
+            println(f, "# mr_power_index: ", get_real(sim_param, "mr_power_index"))
+            println(f, "# mr_max_mass (M_earth): ", get_real(sim_param, "mr_max_mass")/ExoplanetsSysSim.earth_mass)
+        elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018"
+            println(f, "# mr_model: Ning2018")
+        elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table"
+            println(f, "# mr_model: Ning2018_table")
+        elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table_above_normal_density_earthlike_rocky_below"
+            println(f, "# radius_switch (R_earth): ", radius_switch)
+            println(f, "# mr_model: Ning2018_table (above radius_switch)")
+            println(f, "# mr_model: Normal density around Earthlike rocky (below radius_switch)")
+        elseif generate_masses_func == "generate_planet_mass_from_radius_Ning2018_table_above_lognormal_mass_earthlike_rocky_below"
+            println(f, "# radius_switch (R_earth): ", radius_switch)
+            println(f, "# mr_model: Ning2018_table (above radius_switch)")
+            println(f, "# mr_model: Lognormal mass around Earthlike rocky (below radius_switch)")
+        end
     end
+    ##### end TODO
 
     println(f, "# generate_e_omega: ", string(get_function(sim_param, "generate_e_omega")))
     println(f, "# sigma_hk: ", get_real(sim_param, "sigma_hk"))
