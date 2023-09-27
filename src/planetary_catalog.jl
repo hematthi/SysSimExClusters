@@ -116,6 +116,7 @@ function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::
     durations_norm_circ_singles = Float64[]
     durations_norm_circ_multis = Float64[]
     depths = collect(skipmissing(planets_cleaned[!,:koi_depth]./(1e6))) # list of the transit depths (fraction)
+    radii = collect(skipmissing(planets_cleaned[!,:koi_prad])) # list for the planet radii (Earth radii)
 
     depths_above = Float64[] # list for the transit depths of planets above the photoevaporation boundary in Carrera et al 2018
     depths_below = Float64[] # list for the transit depths of planets below the boundary
@@ -229,6 +230,7 @@ function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::
     stat["depths"] = depths
     stat["depths_above"] = depths_above
     stat["depths_below"] = depths_below
+    stat["radii"] = radii
     stat["radius_ratios"] = sqrt.(depth_ratios)
     stat["radius_ratios_above"] = sqrt.(depth_ratios_above)
     stat["radius_ratios_below"] = sqrt.(depth_ratios_below)
