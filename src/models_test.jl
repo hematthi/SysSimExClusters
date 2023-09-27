@@ -268,7 +268,7 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
     
     if attempts_periods == max_attempts
         P[1:end] .= NaN
-        @info("Max attempts ($attempts_periods) reached. Returning an empty cluster.")
+        #@info("Max attempts ($attempts_periods) reached. Returning an empty cluster.")
     end
     #
 
