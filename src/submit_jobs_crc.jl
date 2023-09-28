@@ -8,7 +8,7 @@ function write_job_array_settings_crc(f; n::Int64=1)
     println(f, "")
     #println(f, "#\$ -M mhe@nd.edu")
     #println(f, "#\$ -m abe") # Send mail when job begins, ends and aborts
-    #println(f, "#\$ -pe smp 12") # Specify parallel environment and legal core size ("smp" for shared memory)
+    println(f, "#\$ -pe smp 6") # Specify parallel environment and legal core size ("smp" for shared memory); NOTE: even for serial jobs, may need to request more than 1 core if requiring high memory (rule of thumb is 1 core for every 2GB of RAM needed)
     println(f, "#\$ -q long") # Specifiy queue ("long" has 14-day run-time limit)
     println(f, "#\$ -N optimize_model") # Specify job name
     println(f, "#\$ -t 1-$n") # Specify number of tasks in array (for job arrays)
@@ -47,4 +47,4 @@ end
 
 n_runs = 50 # total number of runs/tasks in job array to submit
 
-#submit_job_array_optimize(n_runs)
+submit_job_array_optimize(n_runs)
