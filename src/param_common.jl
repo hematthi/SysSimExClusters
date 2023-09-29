@@ -94,7 +94,7 @@ end
 
 function add_sim_param_photoevaporation_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "system_age", 5.) # Gyr
-    add_param_fixed(sim_param, "α_pret", 4.) # fudge factor for the envelope retention probability
+    add_param_active(sim_param, "α_pret", 4.) # fudge factor for the envelope retention probability
 end
 
 function add_sim_param_eccentricity_distribution!(sim_param::SimParam)

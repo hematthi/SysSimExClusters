@@ -59,8 +59,8 @@ weights_split = [weights["bluer"], weights["redder"]]
 
 ##### To draw the initial values of the active parameters randomly within a search range:
 
-active_param_keys = ["break1_mass", "log_rate_clusters", "log_rate_planets_per_cluster", "mean_ln_mass", "norm_radius", "power_law_P", "power_law_γ0", "power_law_γ1", "power_law_σ0", "power_law_σ1", "sigma_ln_mass", "sigma_logperiod_per_pl_in_cluster"]
-active_params_box = [(1., 100.), (log(0.2), log(10.)), (log(0.2), log(10.)), (log(1.), log(100.)), (1., 5.), (-2., 2.), (0., 1.), (0., 1.), (0., 0.5), (0., 0.5), (log(1.), log(100.)), (0., 0.5)] #search ranges for all of the active parameters
+active_param_keys = ["break1_mass", "log_rate_clusters", "log_rate_planets_per_cluster", "mean_ln_mass", "norm_radius", "power_law_P", "power_law_γ0", "power_law_γ1", "power_law_σ0", "power_law_σ1", "sigma_ln_mass", "sigma_logperiod_per_pl_in_cluster", "α_pret"]
+active_params_box = [(1., 100.), (log(0.2), log(10.)), (log(0.2), log(10.)), (log(1.), log(100.)), (1., 5.), (-2., 2.), (0., 1.), (0., 1.), (0., 0.5), (0., 0.5), (log(1.), log(100.)), (0., 0.5), (1., 100.)] #search ranges for all of the active parameters
 
 Random.seed!() # to have a random set of initial parameters and optimization run
 
