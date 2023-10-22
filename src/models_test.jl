@@ -217,7 +217,10 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
     R_init::Array{Float64,1} = Array{Float64}(undef, n)
     for i in 1:n # rejection sampling so initial radii are also between the bounds
         radius_in_bounds = false
-        while !radius_in_bounds
+        max_attempts = 10
+        attempts_mass_radii = 0
+        while !radius_in_bounds && attempts_mass_radii < max_attempts
+            attempts_mass_radii += 1
             M_init[i] = rand(M_init_dist)
             R_init[i] = draw_radius_given_mass_neil_rogers2020_one_break(M_init[i]; C=C, M_break=M_break1, γ0=γ0, γ1=γ1, σ0=σ0, σ1=σ1)
             radius_in_bounds = true ? (min_radius < R_init[i] < max_radius) : false
