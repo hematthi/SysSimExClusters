@@ -14,6 +14,8 @@ function write_job_array_settings_crc(f; n::Int64=1)
     println(f, "#\$ -t 1-$n") # Specify number of tasks in array (for job arrays)
     println(f, "")
     println(f, "module load Julia/1.8.5")
+    println(f, "fsync $SGE_STDOUT_PATH &") # synchronizes the standard output file back to the AFS server every 300 seconds
+    println(f, "")
 end
 
 """
