@@ -225,6 +225,11 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
             R_init[i] = draw_radius_given_mass_neil_rogers2020_one_break(M_init[i]; C=C, M_break=M_break1, γ0=γ0, γ1=γ1, σ0=σ0, σ1=σ1)
             radius_in_bounds = true ? (min_radius < R_init[i] < max_radius) : false
         end
+        
+        if !radius_in_bounds
+            M_init[i] = NaN
+            R_init[i] = NaN
+        end
     end
     
     # Convert masses and radii to Solar units at this point:
@@ -234,48 +239,57 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
     #println("# Rp_init = ", R_init)
     #println("# Mp_init = ", M_init)
     
-    # If single planet in cluster:
-    if n==1
-        P = [1.0] # unscaled period
-        return (P, R_init, M_init)
-    end
+    idx_valid = .!isnan.(R_init)
+    n_valid = sum(idx_valid) # number of planets with valid mass/radius draws
     
-    # If reach here, then at least 2 planets in cluster
-    # Draw unscaled periods, checking for mutual-Hill stability (assuming circular orbits) of the entire cluster as a precondition:
-    log_mean_P = 0.0
-    Pdist = Truncated(LogNormal(log_mean_P,sigma_logperiod_per_pl_in_cluster*n), 1/sqrt(max_period_ratio), sqrt(max_period_ratio)) # truncated unscaled period distribution to ensure that the cluster can fit in the period range [min_period, max_period] after scaling by a period scale
     local P
-
-    # Rejection sampling:
-    found_good_periods = false # will be true if entire cluster is likely to be stable assuming circular and coplanar orbits (given sizes/masses and periods)
-    max_attempts = 1000
-    attempts_periods = 0
-    while !found_good_periods && attempts_periods < max_attempts
-        attempts_periods += 1
-        
-        P = rand(Pdist, n)
-        Pratios = P[2:end]./P[1:end-1]
-        
-        # Check the stability of the cluster:
-        if test_stability(P, M_init, star.mass, sim_param)
-            # If pass mutual Hill criteria, also check circular MMR overlap criteria:
-            a = semimajor_axis.(P, M_init .+ star.mass)
-            μ = M_init ./star.mass
-            if test_stability_circular_MMR_overlap(μ, a)
-                found_good_periods = true
-            else
-                @info("Found set of periods passing mutual Hill criteria but not circular MMR overlap criteria.")
-            end
-        end
-    end # while trying to draw periods
+    P = fill(NaN, n)
     
-    if attempts_periods == max_attempts
-        P[1:end] .= NaN
-        #@info("Max attempts ($attempts_periods) reached. Returning an empty cluster.")
+    if n_valid==0
+        # No valid planets are drawn; everything stays as NaNs
+    elseif n_valid==1
+        # A single valid planet is drawn; return an unscaled period of 1 for it and NaNs for the others
+        P[idx_valid] .= 1.
+    else
+        # More than one valid planet is drawn; draw unscaled periods for those planets, checking for mutual-Hill stability (assuming circular orbits) of the entire cluster as a precondition
+        log_mean_P = 0.0
+        Pdist = Truncated(LogNormal(log_mean_P,sigma_logperiod_per_pl_in_cluster*n), 1/sqrt(max_period_ratio), sqrt(max_period_ratio)) # truncated unscaled period distribution to ensure that the cluster can fit in the period range [min_period, max_period] after scaling by a period scale
+        
+        # Rejection sampling:
+        found_good_periods = false # will be true if entire cluster is likely to be stable assuming circular and coplanar orbits (given sizes/masses and periods)
+        max_attempts = 1000
+        attempts_periods = 0
+        while !found_good_periods && attempts_periods < max_attempts
+            attempts_periods += 1
+            
+            P[idx_valid] .= rand(Pdist, n_valid)
+            
+            # Check the stability of the cluster:
+            if test_stability(P[idx_valid], M_init[idx_valid], star.mass, sim_param)
+                # If pass mutual Hill criteria, also check circular MMR overlap criteria:
+                a = semimajor_axis.(P[idx_valid], M_init[idx_valid] .+ star.mass)
+                μ = M_init[idx_valid] ./star.mass
+                if test_stability_circular_MMR_overlap(μ, a)
+                    found_good_periods = true
+                else
+                    @info("Found set of periods passing mutual Hill criteria but not circular MMR overlap criteria.")
+                end
+            end
+        end # while trying to draw periods
+        
+        if !found_good_periods
+            P[1:end] .= NaN # still need this because we have been sampling P in place
+            #@info("Could not draw a stable cluster after ($attempts_periods) attempts. Returning an empty cluster.")
+        end
+        #
     end
-    #
 
-    return (P, R_init, M_init) # NOTE: can also return earlier if only one planet in cluster; also, the planets are NOT sorted at this point
+    # NOTES:
+    # - The output arrays ('P', 'R_init', and 'M_init') are all length 'n'
+    # - All NaNs in 'R_init' and 'M_init' will also be NaNs in 'P'
+    # - However, 'P' can also be NaN for valid 'R_init' and 'M_init'; this happens if did not find a good set of periods for the cluster (and thus 'P' is all NaNs)
+    # - The planets are NOT sorted by period at this point
+    return (P, R_init, M_init)
 end
 
 
@@ -315,68 +329,43 @@ function generate_planetary_system_clustered_periods_and_sizes_photoevap_distrib
         clusteridlist[pl_start:pl_stop] = ones(Int64, num_pl_in_cluster[c])*c
         R_init_list[pl_start:pl_stop], M_init_list[pl_start:pl_stop] = R_init_list_tmp, M_init_list_tmp
 
-        #= Allowed regions sampling:
-        idx = .!isnan.(Plist[1:pl_stop-n])
-        idy = .!isnan.(Plist_tmp)
-        if any(idy)
-            min_period_scale::Float64 = min_period/minimum(Plist_tmp[idy])
-            max_period_scale::Float64 = max_period/maximum(Plist_tmp[idy])
-
-            if min_period_scale < max_period_scale
-                period_scale = draw_periodscale_power_law_allowed_regions_mutualHill(num_pl_in_cluster_true[1:c-1], Plist[1:pl_stop-n][idx], M_init_list[1:pl_stop-n][idx], Plist_tmp[idy], M_init_list_tmp[idy], star.mass, sim_param; x0=min_period_scale, x1=max_period_scale, α=power_law_P)
-            else # cluster cannot fit at all
-                period_scale = NaN
-            end
-        else # void cluster; all NaNs
-            period_scale = NaN
-        end
-        Plist[pl_start:pl_stop] = Plist_tmp .* period_scale
-        if isnan(period_scale)
-            Plist[pl_stop:end] .= NaN
-            #println("Cannot fit cluster into system; returning clusters that did fit.")
-            break
-        end
-        @assert(test_stability(view(Plist,1:pl_stop), view(M_init_list,1:pl_stop), star.mass, sim_param)) # should always be true if our period scale draws are correct
-        =#
-
         # Rejection sampling:
-        valid_cluster = !any(isnan.(Plist_tmp)) # if the cluster has any nans, the whole cluster is discarded
-        valid_period_scale = false
-        max_attempts_period_scale = 100
-        attempts_period_scale = 0
-        min_period_scale::Float64 = min_period/minimum(Plist_tmp)
-        max_period_scale::Float64 = max_period/maximum(Plist_tmp)
-        while !valid_period_scale && attempts_period_scale<max_attempts_period_scale && valid_cluster
-            attempts_period_scale += 1
+        idx_valid = .!isnan.(Plist_tmp)
+        n_valid = sum(idx_valid)
+        if n_valid >= 1
+            # Only attempt to draw period scales for clusters with at least 1 valid planet
+            valid_period_scale = false
+            max_attempts_period_scale = 100
+            attempts_period_scale = 0
+            min_period_scale::Float64 = min_period/minimum(Plist_tmp[idx_valid])
+            max_period_scale::Float64 = max_period/maximum(Plist_tmp[idx_valid])
+            while !valid_period_scale && attempts_period_scale < max_attempts_period_scale
+                attempts_period_scale += 1
 
-            period_scale::Array{Float64,1} = draw_power_law(power_law_P, min_period_scale, max_period_scale, 1)
+                period_scale::Array{Float64,1} = draw_power_law(power_law_P, min_period_scale, max_period_scale, 1)
 
-            Plist[pl_start:pl_stop] = Plist_tmp .* period_scale
+                Plist[pl_start:pl_stop] = Plist_tmp .* period_scale
 
-            if test_stability(view(Plist,1:pl_stop), view(M_init_list,1:pl_stop), star.mass, sim_param)
-                valid_period_scale = true
-                #= If pass mutual Hill criteria, also check circular MMR overlap criteria: ##### WARNING: currently bugged (need to ignore NaNs)
-                alist = semimajor_axis.(view(Plist,1:pl_stop), view(M_init_list,1:pl_stop) .+star.mass)
-                μlist = view(M_init_list,1:pl_stop) ./star.mass
-                if test_stability_circular_MMR_overlap(μlist, alist)
+                if test_stability(view(Plist,1:pl_stop), view(M_init_list,1:pl_stop), star.mass, sim_param)
                     valid_period_scale = true
-                else
-                    @info("Found period scale passing mutual Hill criteria but not circular MMR overlap criteria.")
                 end
-                =#
             end
-        end  # while !valid_period_scale...
 
-        #if attempts_period_scale > 1
-            #println("attempts_period_scale: ", attempts_period_scale)
-        #end
+            #if attempts_period_scale > 1
+                #println("attempts_period_scale: ", attempts_period_scale)
+            #end
 
-        if !valid_period_scale
+            if !valid_period_scale
+                Plist[pl_start:pl_stop] .= NaN
+                #@info("Could not fit cluster into system after ($attempts_period_scale) attempts. Discarding cluster.")
+            end
+        else
+            # For clusters with no valid planets, set all periods to NaNs:
             Plist[pl_start:pl_stop] .= NaN
         end
         #
 
-        num_pl_in_cluster_true[c] = sum(.!isnan.(Plist[pl_start:pl_stop]))
+        num_pl_in_cluster_true[c] = n_valid
         pl_start += n
     end # for c in 1:num_clusters
 
@@ -392,7 +381,7 @@ function generate_planetary_system_clustered_periods_and_sizes_photoevap_distrib
         R_init_list = R_init_list[keep]
         M_init_list = M_init_list[keep]
     end
-
+    
     # Return the system (star) early if failed to draw any planets:
     if num_pl==0
         return PlanetarySystem(star)
