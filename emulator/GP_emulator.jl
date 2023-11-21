@@ -10,20 +10,20 @@ using Optim
 
 
 function load_data(dims::Int64, data_path::String)
-    data_table_original =  CSV.read(joinpath(data_path,"Active_params_distances_table_best100000_every10.txt"), comment="#")
-    data_table_recomputed = CSV.read(joinpath(data_path,"Active_params_recomputed_distances_table_best100000_every10.txt"), comment="#")
+    data_table_original =  CSV.read(joinpath(data_path,"Active_params_distances_table_best100000_every10.txt"), comment="#", DataFrame)
+    data_table_recomputed = CSV.read(joinpath(data_path,"Active_params_recomputed_distances_table_best100000_every10.txt"), comment="#", DataFrame)
 
     params_names = names(data_table_recomputed)[1:dims]
     dists_names = names(data_table_recomputed)[dims+1:end]
 
-    params_array_original = convert(Matrix, data_table_original[1:end, params_names])
+    params_array_original = Matrix(data_table_original[1:end, params_names])
     dist_array_original = convert(Array, data_table_original[1:end, :dist_tot_weighted])
 
-    params_array = convert(Matrix, data_table_recomputed[1:end, params_names])
+    params_array = Matrix(data_table_recomputed[1:end, params_names])
     dist_array = convert(Array, data_table_recomputed[1:end, :dist_tot_weighted])
 
     # If we want to transform some parameters by sum and difference:
-    transform_sum_diff_params!(params_names, params_array, 4, 5) #####
+    transform_sum_diff_params!(params_names, params_array, 3, 4) #####
 
     data = Dict()
     data[:params_names] = params_names
@@ -208,7 +208,7 @@ end
 
 
 
-data_path = "GP_files"
+data_path = "/Users/hematthi/Documents/GradSchool/Research/ACI/Model_Optimization/AMD_system/Split_stars/Singles_ecc/Params11_KS/Distribute_AMD_equal/durations_norm_circ_singles_multis_GF2020_KS/GP_files" #"GP_files"
 prior_bounds = nothing
 
 # Transformed:
@@ -222,4 +222,4 @@ prior_bounds = [(0.6, 1.), (-0.6, 2.), (-1., 2.), (-1.5, 3.), (6., 15.), (-0.8, 
 dims = 11
 mean_f = 75. # KS
 #mean_f = 150. # AD
-GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=false)
+GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=true)
