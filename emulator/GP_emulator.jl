@@ -23,7 +23,7 @@ function load_data(dims::Int64, data_path::String)
     dist_array = convert(Array, data_table_recomputed[1:end, :dist_tot_weighted])
 
     # If we want to transform some parameters by sum and difference:
-    transform_sum_diff_params!(params_names, params_array, 3, 4) #####
+    transform_sum_diff_params!(params_names, params_array, 2, 3) #####
 
     data = Dict()
     data[:params_names] = params_names
@@ -208,18 +208,19 @@ end
 
 
 
-data_path = "/Users/hematthi/Documents/GradSchool/Research/ACI/Model_Optimization/AMD_system/Split_stars/Singles_ecc/Params11_KS/Distribute_AMD_equal/durations_norm_circ_singles_multis_GF2020_KS/GP_files" #"GP_files"
+#data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
+data_path = "GP_files"
 prior_bounds = nothing
 
 # Transformed:
-hparams_best = [2.7, 0.2, 1., 1., 1.5, 3., 1., 0.5, 1., 0.2, 0.15, 0.15]
-prior_bounds = [(0.6, 1.), (-0.6, 2.), (-1., 2.), (-1.5, 3.), (6., 15.), (-0.8, 1.6), (-2., -0.5), (-6., -3.), (0., 0.5), (0.1, 0.5), (0.1, 0.5)]
+hparams_best = [2.7, 30., 1., 1.5, 1., 1., 1., 0.2, 0.4, 0.15, 0.2, 1., 0.2] #, 30.] # if also including alpha_ret
+prior_bounds = [(1., 100.), (-1., 1.), (-1., 3.), (0., 3.), (1., 3.), (-0.8, 1.6), (0., 0.5), (0., 1.), (0.1, 0.5), (0., 0.5), (0.5, 3.), (0., 0.5)] #, (1., 100.)] # if also including alpha_ret
 
 
 
 
 
-dims = 11
-mean_f = 75. # KS
-#mean_f = 150. # AD
-GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=true)
+dims = length(prior_bounds)
+mean_f = 35. # fit_all_KS
+#mean_f = 90. # fit_split_KS
+GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=false)
