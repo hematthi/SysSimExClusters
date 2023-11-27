@@ -93,14 +93,14 @@ function compute_kernel_given_data(xdata::Array{Float64,2}, kernel::Function, hp
     K = kernel(xdata, xdata, hparams)
     var_I = zeros(size(K))
     var_I[diagind(var_I)] = ydata_err.^2
-    L = transpose(cholesky(K + var_I).U)
+    L = cholesky(K + var_I).L #####transpose(cholesky(K + var_I).U)
     return L
 end
 
 """
 Does the same thing as the function 'draw_from_posterior_given_kernel_and_data', but takes in a precomputed cholesky decomposition matrix 'L' to save time.
 """
-function draw_from_posterior_given_precomputed_kernel_from_data(xpoints::Array{Float64,2}, xdata::Array{Float64,2}, ydata::Vector{Float64}, L::Transpose{Float64,UpperTriangular{Float64,Array{Float64,2}}}, kernel::Function, hparams::Vector{Float64}; diag_noise::Float64=1e-5, draws::Integer=1)
+function draw_from_posterior_given_precomputed_kernel_from_data(xpoints::Array{Float64,2}, xdata::Array{Float64,2}, ydata::Vector{Float64}, L::LowerTriangular{Float64,Matrix{Float64}}, kernel::Function, hparams::Vector{Float64}; diag_noise::Float64=1e-5, draws::Integer=1)
     @assert size(xdata, 1) == length(ydata)
 
     K_ss = kernel(xpoints, xpoints, hparams)
@@ -223,7 +223,7 @@ end
 """
 Uses a GP model (i.e. a given kernel and set of hyperparameters) with a pre-computed cholesky decomposition matrix 'L' and a set of data points, to compute the mean, standard deviation, and a draw from the posterior at points drawn from a uniform prior until a point passing the criteria for the mean and std is accepted.
 """
-function predict_model_from_uniform_prior_until_accept_point(prior_bounds::Array{Tuple{Float64,Float64},1}, xdata::Array{Float64,2}, ydata::Vector{Float64}, kernel::Function, hparams::Vector{Float64}, L::Transpose{Float64,UpperTriangular{Float64,Array{Float64,2}}}, ydata_err::Vector{Float64}; n_accept::Int64=1, max_mean::Float64=Inf, max_std::Float64=Inf, max_post::Float64=Inf)
+function predict_model_from_uniform_prior_until_accept_point(prior_bounds::Array{Tuple{Float64,Float64},1}, xdata::Array{Float64,2}, ydata::Vector{Float64}, kernel::Function, hparams::Vector{Float64}, L::LowerTriangular{Float64,Matrix{Float64}}, ydata_err::Vector{Float64}; n_accept::Int64=1, max_mean::Float64=Inf, max_std::Float64=Inf, max_post::Float64=Inf)
     @assert size(xdata, 1) == length(ydata) == length(ydata_err)
     dims = size(xdata, 2)
 
