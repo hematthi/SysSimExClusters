@@ -6,32 +6,30 @@ include(joinpath(dir_path, "../src/optimization.jl"))
 
 ##### To load model parameters found using the GP emulator and simulate catalogs if they pass a distance threshold:
 
-save_path = "/Users/hematthi/Documents/GradSchool/Research/ACI/Simulated_Data/AMD_system/Split_stars/Singles_ecc/Params11_KS/Distribute_AMD_per_mass/durations_norm_circ_singles_multis_GF2020_KS/GP_best_models_1000"
+save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_best_models_100"
 
-GP_data_path = "/Users/hematthi/Documents/GradSchool/Research/ACI/Model_Optimization/AMD_system/Split_stars/Singles_ecc/Params11_KS/Distribute_AMD_per_mass/durations_norm_circ_singles_multis_GF2020_KS/GP_files"
-GP_file_name = "GP_train2000_meanf100.0_sigmaf2.7_lscales9.7_vol109.18_points50000_meanInf_stdInf_post-35.0.csv"
+GP_data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
+GP_file_name = "GP_train2000_meanf35.0_sigmaf2.7_lscales37.65_vol1425.6_points100000_meanInf_stdInf_post-10.0.csv"
 GP_points = CSV.read(joinpath(GP_data_path, GP_file_name), DataFrame, comment="#")
 active_params_names = names(GP_points)[1:end-3]
 active_params_best_all = GP_points[!,active_params_names]
 
 # If transformed:
 #
-i_tf, j_tf = 3,4 # indices of transformed parameters
+i_tf, j_tf = 2,3 # indices of transformed parameters
 active_params_names[i_tf:j_tf] = ["log_rate_clusters", "log_rate_planets_per_cluster"]
 active_params_best_all[!,i_tf], active_params_best_all[!,j_tf] = (active_params_best_all[!,i_tf] .- active_params_best_all[!,j_tf])/2., (active_params_best_all[!,i_tf] .+ active_params_best_all[!,j_tf])/2.
 rename!(active_params_best_all, Symbol.(active_params_names))
 #
 
-model_name = "Clustered_P_R"
-names_split = ["bluer", "redder"]
+model_name = "Hybrid1"
 AD_mod = true
 num_targs = 86760
-dists_include_split = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_norm_circ_singles_KS", "durations_norm_circ_multis_KS", "duration_ratios_nonmmr_KS", "duration_ratios_mmr_KS", "depths_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
-dists_include_all = dists_include_split
+dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
 
-d_threshold, mean_f = 75., 100.
-n_pass = 1000 # number of simulations we want to pass the distance threshold
-n_save = 1000 # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
+d_threshold, mean_f = 30., 35.
+n_pass = 100 # number of simulations we want to pass the distance threshold
+n_save = 100 # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
 
 file_name = model_name*"_pass_GP_meanf$(mean_f)_thres$(d_threshold)_pass$(n_pass)_targs$(num_targs).txt"
 f = open(joinpath(save_path, file_name), "w")
@@ -40,15 +38,9 @@ f = open(joinpath(save_path, file_name), "w")
 
 
 
-##### To split the Kepler data into redder and bluer halves:
+##### To load the Kepler catalog:
 
-bprp = stellar_catalog[!,:bp_rp] .- stellar_catalog[!,:e_bp_min_rp_interp]
-med_bprp = median(bprp)
-idx_bluer = collect(1:size(stellar_catalog,1))[bprp .< med_bprp]
-idx_redder = collect(1:size(stellar_catalog,1))[bprp .>= med_bprp]
-star_id_split = [idx_bluer, idx_redder]
-
-cssck = calc_summary_stats_collection_Kepler(stellar_catalog, planet_catalog, names_split, star_id_split, sim_param)
+ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned)
 
 
 
@@ -56,9 +48,7 @@ cssck = calc_summary_stats_collection_Kepler(stellar_catalog, planet_catalog, na
 
 ##### To load a file with the weights:
 
-active_param_true, weights, target_fitness, target_fitness_std = compute_weights_target_fitness_std_from_file_split_samples(joinpath(dir_path, "../src/Clustered_P_R_split_stars_weights_ADmod_$(AD_mod)_targs88912_evals100_all_pairs.txt"), 4950, sim_param; names_samples=names_split, dists_include_samples=[dists_include_split, dists_include_split], dists_include_all=dists_include_all, f=f)
-weights_all = weights["all"]
-weights_split = [weights["bluer"], weights["redder"]]
+active_param_true, weights, target_fitness, target_fitness_std = compute_weights_target_fitness_std_from_file_split_samples("../src/Maximum_AMD_model_split_stars_weights_ADmod_$(AD_mod)_targs86760_evals100_all_pairs.txt", 4950, sim_param; names_samples=String[], dists_include_samples=[String[]], dists_include_all=dists_include, f=f)
 
 
 
@@ -71,14 +61,13 @@ add_param_fixed(sim_param,"num_targets_sim_pass_one", num_targs)
 
 println(f, "# Active parameters: ", String.(active_params_names))
 println(f, "# AD_mod: ", AD_mod)
-println(f, "# Distances used (split): ", dists_include_split)
-println(f, "# Distances used (all): ", dists_include_all)
+println(f, "# Distances used: ", dists_include)
 println(f, "#")
 println(f, "# Format: Active_params: [active parameter values]")
-println(f, "# Format: [sample] Counts: [observed multiplicities][total planets, total planet pairs]")
-println(f, "# Format: [sample] d_used_keys: [names of distance terms]")
-println(f, "# Format: [sample] d_used_vals: [distance terms][sum of distance terms]")
-println(f, "# Format: [sample] d_used_vals_w: [weighted distance terms][sum of weighted distance terms]")
+println(f, "# Format: Counts: [observed multiplicities][total planets, total planet pairs]")
+println(f, "# Format: d_used_keys: [names of distance terms]")
+println(f, "# Format: d_used_vals: [distance terms][sum of distance terms]")
+println(f, "# Format: d_used_vals_w: [weighted distance terms][sum of weighted distance terms]")
 println(f, "#")
 
 sim_count = 0
@@ -105,36 +94,25 @@ t_elapsed = @elapsed begin
         cat_obs = observe_kepler_targets_single_obs(cat_phys_cut,sim_param)
 
         # Compute the summary statistics:
-        cssc = calc_summary_stats_collection_model(cat_obs, names_split, [cssck.star_id_samples[name] for name in names_split], sim_param)
-        summary_stat = cssc.css_samples["all"]
+        summary_stat = calc_summary_stats_model(cat_obs,sim_param)
 
-        # Compute and write the distances:
-        names_list = ["all"; names_split]
-        dists_include_list = [dists_include_all, dists_include_split, dists_include_split]
-        weights_list = [weights_all; weights_split]
-
-        dists_used_vals_w_list = []
-        for (n,name) in enumerate(names_list)
-
-            # Compute the individual and total weighted distances:
-            dists, counts = calc_all_distances_dict(sim_param, cssc.css_samples[name], cssck.css_samples[name]; AD_mod=AD_mod)
-            dists_used, dists_used_w = Dict{String,Float64}(), Dict{String,Float64}()
-            for (i,key) in enumerate(dists_include_list[n])
-                dists_used[key] = dists[key]
-                dists_used_w[key] = dists[key]*weights_list[n][key]
-            end
-            dists_used_keys = keys(dists_used_w)
-            dists_used_vals, dists_used_vals_w = values(dists_used), values(dists_used_w)
-            push!(dists_used_vals_w_list, dists_used_vals_w)
-
-            # Write the distances to file:
-            println(f, "[$name] Counts: ", counts["Nmult1"], [counts["n_pl1"], counts["n_pairs1"]])
-            println(f, "[$name] d_used_keys: ", dists_used_keys)
-            println(f, "[$name] d_used_vals: ", dists_used_vals, [sum(dists_used_vals)])
-            println(f, "[$name] d_used_vals_w: ", dists_used_vals_w, [sum(dists_used_vals_w)])
+        # Compute the individual and total weighted distances:
+        dists, counts = calc_all_distances_dict(sim_param, summary_stat, ssk; AD_mod=AD_mod)
+        dists_used, dists_used_w = Dict{String,Float64}(), Dict{String,Float64}()
+        for (i,key) in enumerate(dists_include)
+            dists_used[key] = dists[key]
+            dists_used_w[key] = dists[key]*weights["all"][key]
         end
+        dists_used_keys = keys(dists_used_w)
+        dists_used_vals, dists_used_vals_w = values(dists_used), values(dists_used_w)
 
-        d_tot_w = sum([sum(x) for x in dists_used_vals_w_list])
+        # Write the distances to file:
+        println(f, "Counts: ", counts["Nmult1"], [counts["n_pl1"], counts["n_pairs1"]])
+        println(f, "d_used_keys: ", dists_used_keys)
+        println(f, "d_used_vals: ", dists_used_vals, [sum(dists_used_vals)])
+        println(f, "d_used_vals_w: ", dists_used_vals_w, [sum(dists_used_vals_w)])
+
+        d_tot_w = sum([sum(x) for x in dists_used_vals_w])
 
         # Write the total distances to file:
         println(f, "Total_dist_w: ", [d_tot_w])
