@@ -78,4 +78,4 @@ You do NOT need to download SysSimExClusters in order to use these Python packag
 
 ## What if I need help?
 
-Feel free to email Matthias He at mhe@nd.edu!
+Feel free to email Matthias He at matthias.he@alumni.utoronto.ca!
