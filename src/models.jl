@@ -154,7 +154,7 @@ function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(st
     pl = Array{Planet}(undef, num_pl)
     orbit = Array{Orbit}(undef, num_pl)
     for i in 1:num_pl
-        pl[i] = Planet(Rlist[i], masslist[i], clusteridlist[i])
+        pl[i] = Planet(Rlist[i], masslist[i], id=clusteridlist[i])
         orbit[i] = Orbit(Plist[i], ecclist[i], inclskylist[i], ωlist[i], Ωskylist[i], meananomlist[i])
     end
     sys_ref_plane = SystemPlane(incl_invariable, Ω_invariable)
@@ -185,7 +185,7 @@ function generate_planetary_system_resonant_chain_clustered_sizes_distribute_amd
     pl = Array{Planet}(undef, num_pl)
     orbit = Array{Orbit}(undef, num_pl)
     for i in 1:num_pl
-        pl[i] = Planet(Rlist[i], masslist[i], 0)
+        pl[i] = Planet(Rlist[i], masslist[i])
         orbit[i] = Orbit(Plist[i], ecclist[i], inclskylist[i], ωlist[i], Ωskylist[i], meananomlist[i])
     end
     sys_ref_plane = SystemPlane(incl_invariable, Ω_invariable)

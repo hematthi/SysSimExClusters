@@ -442,7 +442,7 @@ function generate_planetary_system_clustered_periods_and_sizes_photoevap_distrib
     pl = Array{Planet}(undef, num_pl)
     orbit = Array{Orbit}(undef, num_pl)
     for i in 1:num_pl
-        pl[i] = Planet(R_final_list[i], M_final_list[i], clusteridlist[i])
+        pl[i] = Planet(R_final_list[i], M_final_list[i], clusteridlist[i], ExoplanetsSysSim.PlanetParamsExtra(R_init_list[i], M_init_list[i], M_env_list[i], t_loss_list[i], p_ret_list[i], bools_ret_list[i]))
         orbit[i] = Orbit(Plist[i], ecclist[i], inclskylist[i], ωlist[i], Ωskylist[i], meananomlist[i])
     end
     sys_ref_plane = SystemPlane(incl_invariable, Ω_invariable)
