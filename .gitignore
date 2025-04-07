@@ -7,6 +7,7 @@ deps/deps.jl
 julia_types
 libcorbits.so
 profile*
+src/*.txt
 examples/*.out
 examples/*.csv
 Examples/test/
