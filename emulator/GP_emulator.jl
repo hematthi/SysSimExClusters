@@ -208,8 +208,8 @@ end
 
 
 
-#data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
-data_path = "GP_files"
+data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
+#data_path = "GP_files"
 prior_bounds = nothing
 
 # Transformed:
@@ -223,4 +223,4 @@ prior_bounds = [(1., 100.), (-1., 1.), (-1., 3.), (0., 3.), (1., 3.), (-0.8, 1.6
 dims = length(prior_bounds)
 mean_f = 35. # fit_all_KS
 #mean_f = 90. # fit_split_KS
-GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=false)
+GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=true)
