@@ -22,7 +22,7 @@ params_keys = names(data_table)[1:end-1]
 
 params_array = Matrix(data_table[1:end, params_keys])
 
-run_number, runs = parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
+run_number, runs = 1, 1 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
 evals = Int(size(params_array,1)/runs)
 start, stop = 1+(run_number-1)*evals, run_number*evals
 

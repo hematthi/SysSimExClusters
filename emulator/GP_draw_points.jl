@@ -35,7 +35,7 @@ end
 
 # To use the optimized GP model to predict at a large number of points drawn from the prior:
 
-n_points = 100
-max_mean, max_std, max_post = Inf, Inf, -10.
+n_points = 100000
+max_mean, max_std, max_post = Inf, Inf, Inf #-10.
 save_path = data_path
 draw_points_with_GP_and_save(n_points; params_names=GP_model[:params_names], xdata=GP_model[:xtrain], mean_f=GP_model[:mean_f], ydata=GP_model[:ytrain], ydata_err=GP_model[:ytrain_err], kernel=kernel_SE_ndims, hparams=GP_model[:hparams_best], prior_bounds=prior_bounds, max_mean=max_mean, max_std=max_std, max_post=max_post, save_path=save_path)
