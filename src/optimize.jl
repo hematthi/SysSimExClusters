@@ -18,14 +18,11 @@ function setup_and_run_optimizer(run_number::Int64=parse(Int64,ARGS[1]); max_eva
     model_name = "Hybrid1"
     AD_mod = true
     num_targs = 86760
-    dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
+    dists_include = ["delta_f", "mult_CRPD_r", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
     pop_per_param = 4
     
-    active_param_keys = ["break1_mass", "mean_ln_mass", "norm_radius", "power_law_γ0", "power_law_γ1", "power_law_σ0", "power_law_σ1", "sigma_ln_mass"]
-    active_params_box = [(1., 100.), (log(1.), log(100.)), (1., 5.), (0., 1.), (0., 1.), (0., 0.5), (0., 0.5), (log(1.), log(100.))] # search ranges for all of the active parameters
-    
-    #active_param_keys = ["break1_mass", "log_rate_clusters", "log_rate_planets_per_cluster", "mean_ln_mass", "norm_radius", "power_law_P", "power_law_γ0", "power_law_γ1", "power_law_σ0", "power_law_σ1", "sigma_ln_mass", "sigma_logperiod_per_pl_in_cluster", "α_pret"]
-    #active_params_box = [(1., 100.), (log(0.2), log(10.)), (log(0.2), log(10.)), (log(1.), log(100.)), (1., 5.), (-2., 2.), (0., 1.), (0., 1.), (0., 0.5), (0., 0.5), (log(1.), log(100.)), (0., 0.5), (1., 100.)] # search ranges for all of the active parameters
+    active_param_keys = ["log_rate_clusters", "log_rate_planets_per_cluster", "log_α_pret", "mean_ln_mass", "norm_radius", "power_law_γ0", "power_law_σ0", "sigma_ln_mass"]
+    active_params_box = [(log(0.2), log(5.)), (log(0.2), log(5.)), (log(0.01), log(1000.)), (log(1.), log(100.)), (1., 5.), (0., 1.), (0., 0.5), (log(1.), log(100.))] # search ranges for all of the active parameters
     
     #####
     

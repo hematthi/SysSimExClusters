@@ -396,7 +396,7 @@ function generate_planetary_system_clustered_periods_and_sizes_photoevap_distrib
     # Implement envelope mass loss via photoevaporation:
     
     t_age = get_real(sim_param, "system_age") # age of system (Gyr)
-    α = get_real(sim_param, "α_pret") # fudge factor for envelope retention probability/mass-loss timescale
+    α = exp(get_real(sim_param, "log_α_pret")) # fudge factor for envelope retention probability/mass-loss timescale
     
     # NOTE/TODO: the functions for implementing photoevaporation use Earth units but the masses and radii are in Solar units at this point; figure out a way to do this more consistently and conveniently
     
