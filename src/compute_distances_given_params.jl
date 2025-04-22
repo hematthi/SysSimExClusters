@@ -14,9 +14,10 @@ sim_param = setup_sim_param_model()
 model_name = "Hybrid1"
 AD_mod = true
 num_targs = 86760
-dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
+dists_include = ["delta_f", "mult_CRPD_r", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
+#dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
 
-data_table = CSV.read("../emulator/GP_files/Active_params_distances_table_best100000_every10.txt", DataFrame)
+data_table = CSV.read("../emulator/GP_files/Active_params_distances_table_best10000_every1.txt", DataFrame)
 params_keys = names(data_table)[1:end-1]
 @assert all(make_vector_of_active_param_keys(sim_param) .== String.(params_keys))
 
@@ -26,7 +27,7 @@ run_number, runs = 1, 1 #parse(Int64, ARGS[1]), parse(Int64, ARGS[2])
 evals = Int(size(params_array,1)/runs)
 start, stop = 1+(run_number-1)*evals, run_number*evals
 
-file_name = model_name*"_recompute_optim_best100000_every10_evals$(start)to$(stop)_targs$(num_targs).txt"
+file_name = model_name*"_recompute_optim_best10000_every1_evals$(start)to$(stop)_targs$(num_targs).txt"
 f = open(file_name, "w")
 println(f, "# All initial parameters:")
 write_model_params(f, sim_param)
