@@ -10,8 +10,8 @@ using Optim
 
 
 function load_data(dims::Int64, data_path::String)
-    data_table_original =  CSV.read(joinpath(data_path,"Active_params_distances_table_best100000_every10.txt"), comment="#", DataFrame)
-    data_table_recomputed = CSV.read(joinpath(data_path,"Active_params_recomputed_distances_table_best100000_every10.txt"), comment="#", DataFrame)
+    data_table_original =  CSV.read(joinpath(data_path,"Active_params_distances_table_best10000_every1.txt"), comment="#", DataFrame)
+    data_table_recomputed = CSV.read(joinpath(data_path,"Active_params_recomputed_distances_table_best10000_every1.txt"), comment="#", DataFrame)
 
     params_names = names(data_table_recomputed)[1:dims]
     dists_names = names(data_table_recomputed)[dims+1:end]
@@ -208,18 +208,21 @@ end
 
 
 
-#data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
+#=
+data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
 prior_bounds = nothing
 
 # Transformed:
-#hparams_best = [2.7, 30., 1., 1.5, 1., 1., 1., 0.2, 0.4, 0.15, 0.2, 1., 0.2] #, 30.] # if also including alpha_ret
-#prior_bounds = [(1., 100.), (-1., 1.), (-1., 3.), (0., 3.), (1., 3.), (-0.8, 1.6), (0., 0.5), (0., 1.), (0.1, 0.5), (0., 0.5), (0.5, 3.), (0., 0.5)] #, (1., 100.)] # if also including alpha_ret
+hparams_best = [2.7, 30., 1., 1.5, 1., 1., 1., 0.2, 0.4, 0.15, 0.2, 1., 0.2] #, 30.] # if also including alpha_ret
+prior_bounds = [(1., 100.), (-1., 1.), (-1., 3.), (0., 3.), (1., 3.), (-0.8, 1.6), (0., 0.5), (0., 1.), (0.1, 0.5), (0., 0.5), (0.5, 3.), (0., 0.5)] #, (1., 100.)] # if also including alpha_ret
 
 mean_f = 35. # fit_all_KS
 #mean_f = 90. # fit_split_KS
+=#
 
 
 
+#=
 data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params8/GP_files"
 
 hparams_best = [5.4, 30., 0.3, 0.5, 0.15, 0.4, 0.15, 0.2, 0.4]/2
@@ -227,6 +230,17 @@ hparams_best = [5.4, 30., 0.3, 0.5, 0.15, 0.4, 0.15, 0.2, 0.4]/2
 prior_bounds = [(1., 100.), (0., 1.5), (1., 3.), (0., 0.5), (0., 1.), (0., 0.5), (0., 0.5), (0.5, 2.5)]
 
 mean_f = 35. # fit_all_KS
+=#
+
+
+
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some_KS/Params8_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [5.4, 1., 1., 1.5, 0.3, 0.4, 0.15, 0.15, 0.4]/2
+prior_bounds = [(-1.6, 1.2), (-1.6, 1.2), (0., 6.), (0., 1.5), (1., 3.), (0., 0.8), (0., 0.5), (0., 2.)]
+
+mean_f = 25. # fit_all_KS
 
 
 
