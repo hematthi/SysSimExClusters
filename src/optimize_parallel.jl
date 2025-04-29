@@ -5,7 +5,7 @@ addprocs(4, exeflags="--project=$(Base.active_project())") # add number of addit
 
 @everywhere include("optimize.jl")
 
-run_ids = 1:20
+run_ids = 1:25
 max_evals = 5000
 
 #@distributed for i=run_ids
