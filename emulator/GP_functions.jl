@@ -2,9 +2,10 @@ using LinearAlgebra
 using Random
 using DataFrames
 using CSV
-using Sobol
+#using Sobol
 using Statistics
 using Distributed
+using ProgressMeter
 
 
 
@@ -262,9 +263,11 @@ function predict_model_from_uniform_prior_until_accept_n_points(params_names::Ar
 
     prior_draws_GP_table = Array{Float64,2}(undef, n_accept, dims+3)
     count_draws = 0
-    for i in 1:n_accept
+    p = Progress(n_accept; dt=1.0)
+    @showprogress for i in 1:n_accept
         prior_draws_GP_table[i, 1:end], counts = predict_model_from_uniform_prior_until_accept_point(prior_bounds, xdata, ydata, kernel, hparams, L, ydata_err; max_mean=max_mean, max_std=max_std, max_post=max_post)
         count_draws += counts
+        next!(p)
 
         if i == 10
             println("First ", i, " points accepted after ", count_draws, " draws...")
@@ -296,8 +299,25 @@ function predict_model_from_uniform_prior_until_accept_n_points_parallel(params_
     println("Number of procs: ", nprocs())
     prior_draws_GP_table = SharedArray{Float64,2}(n_accept, dims+3)
     draws_per_accept = SharedArray{Int64,1}(n_batch)
-    @sync @distributed for i in 1:n_batch
-        prior_draws_GP_table[1+(i-1)*n_per_batch:i*n_per_batch,:], draws_per_accept[i] = predict_model_from_uniform_prior_until_accept_point(prior_bounds, xdata, ydata, kernel, hparams, L, ydata_err; n_accept=n_per_batch, max_mean=max_mean, max_std=max_std, max_post=max_post)
+    # Set up the progress bar (see "https://github.com/timholy/ProgressMeter.jl" under "Tips for parallel programming"):
+    p = Progress(n_batch; dt=1.0, showspeed=true)
+    channel = RemoteChannel(() -> Channel{Bool}(), 1)
+    @sync begin
+        # First task updates the progress bar:
+        @async while take!(channel)
+            next!(p)
+        end
+        
+        # Second task does the actual computation:
+        # Note: need either '@sync' or a reduction operation for the '@distributed' for-loop in order to make this work! The 'put!(channel, false)' must execute only after the entire loop is finished.
+        @async begin
+            println("Starting the distributed for-loop...")
+            @sync @distributed for i in 1:n_batch
+                prior_draws_GP_table[1+(i-1)*n_per_batch:i*n_per_batch,:], draws_per_accept[i] = predict_model_from_uniform_prior_until_accept_point(prior_bounds, xdata, ydata, kernel, hparams, L, ydata_err; n_accept=n_per_batch, max_mean=max_mean, max_std=max_std, max_post=max_post)
+                put!(channel, true) # trigger a progress bar update
+            end
+            put!(channel, false) # ends the while loop from the first task so all is done
+        end
     end
     count_draws = sum(draws_per_accept)
 

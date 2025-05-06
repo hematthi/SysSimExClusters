@@ -1,6 +1,6 @@
 using Distributed
 
-addprocs(8, exeflags="--project=..") #number of additional processors
+addprocs(4, exeflags="--project=..") #number of additional processors
 
 using SharedArrays
 #@everywhere using DistributedArrays
