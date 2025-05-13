@@ -3,7 +3,6 @@
 include("GP_functions.jl")
 
 using PyPlot
-using Optim
 
 
 
