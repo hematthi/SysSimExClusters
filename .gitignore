@@ -12,3 +12,4 @@ examples/*.out
 examples/*.csv
 Examples/test/
 emulator/GP_files
+debug/
