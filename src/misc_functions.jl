@@ -24,6 +24,30 @@ end
 
 
 """
+    radius_delta_from_period_radius_gap(R, P; m=-0.1, Rgap0=2.4)
+
+Computes the difference between a set of planet radii and the location of the radius gap in period-radius space, parameterized as a linear function.
+
+# Arguments:
+- `R::Float64`: planet radius (Earth radii).
+- `P::Float64`: period (days).
+- `m::Float64=-0.10`: the slope of the line for the radius gap in log(period) vs. log(radius).
+- `Rgap0::Float64=2.40`: the normalization (offset) of the line for the radius gap, at P=1 day.
+
+# Returns:
+- `delta_R::Float64`: the difference in planet radius from the location of the radius gap, `R - Rgap` (Earth radii). Positive/negative values imply radii above/below the line, respectively.
+"""
+function radius_delta_from_period_radius_gap(R::Float64, P::Float64; m::Float64=-0.10, Rgap0::Float64=2.40)
+    @assert R > 0.
+    @assert P > 0.
+    Rgap = Rgap0*P^m
+    delta_R = R - Rgap
+    return delta_R
+end
+
+
+
+"""
     calc_transit_duration_central_circ_obs(P; Mstar, Rstar)
 
 Calculate the expected transit duration assuming a circular orbit with impact parameter b=0. Analogous to the function `ExoplanetsSysSim.calc_transit_duration_central_circ_small_angle_approx`.

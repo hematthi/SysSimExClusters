@@ -97,6 +97,15 @@ function add_sim_param_photoevaporation_NR20!(sim_param::SimParam)
     add_param_active(sim_param, "log_α_pret", log(8.)) # fudge factor for the envelope retention probability
 end
 
+function add_sim_param_radius_valley_stats!(sim_param::SimParam)
+    add_param_fixed(sim_param, "radius_valley_slope", -0.10) # slope in log(R[Earth radii])/log(P[days])
+    add_param_fixed(sim_param, "radius_valley_offset", 2.40) # normalization (Earth radii) at P=1 day
+    add_param_fixed(sim_param, "radius_valley_min_radius_include", 0.5) # Earth radii
+    add_param_fixed(sim_param, "radius_valley_max_radius_include", 4.0) # Earth radii
+    add_param_fixed(sim_param, "radius_valley_min_period_include", 3.0) # days
+    add_param_fixed(sim_param, "radius_valley_max_period_include", 100.0) # days
+end
+
 function add_sim_param_eccentricity_distribution!(sim_param::SimParam)
     add_param_fixed(sim_param, "generate_e_omega", ExoplanetsSysSim.generate_e_omega_rayleigh)
     add_param_fixed(sim_param, "sigma_hk", 0.25)
@@ -162,6 +171,10 @@ function setup_sim_param_clustered_photoevap_amd_model()
     add_sim_param_eccentricity_distribution!(sim_param) # for the single-planets only
     add_sim_param_stability_criteria_and_amd!(sim_param)
     add_sim_param_resonant_chains!(sim_param) # still needed for calculating which planets are near MMRs for now
+    
+    # Add the parameters for computing the difference in planet radii from the radius valley location in period-radius:
+    # NOTE: these parameters are only used for computing the summary statistic, NOT in the model/simulations!
+    add_sim_param_radius_valley_stats!(sim_param)
     
     return sim_param
 end
