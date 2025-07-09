@@ -96,11 +96,12 @@ Compute the summary statistics of a Kepler planet catalog and compile them into 
 # Arguments:
 - `stellar_catalog::DataFrame`: table of target stars.
 - `planets_cleaned::DataFrame`: table of planet candidates around the stars in `stellar_catalog`.
+- `sim_param::SimParam`: a SimParam object containing various simulation parameters.
 
 # Returns:
 A `CatalogSummaryStatistics` object, where the `stat` field is a dictionary containing the summary statistics.
 """
-function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::DataFrame)
+function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::DataFrame; sim_param::SimParam)
     KOI_systems = [x[1:6] for x in planets_cleaned[!,:kepoi_name]]
     checked_bools = zeros(size(planets_cleaned,1)) # 0's denote KOI that were not checked yet; 1's denote already checked KOI
 
@@ -117,6 +118,15 @@ function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::
     durations_norm_circ_multis = Float64[]
     depths = collect(skipmissing(planets_cleaned[!,:koi_depth]./(1e6))) # list of the transit depths (fraction)
     radii = collect(skipmissing(planets_cleaned[!,:koi_prad])) # list for the planet radii (Earth radii)
+    radii_delta_from_valley_list = Float64[] # list for the planet radii differences from the location of the radius valley (Earth radii)
+    
+    # Parameters for computing the difference in planet radii from the location of the radius valley:
+    radius_valley_slope = get_real(sim_param, "radius_valley_slope")
+    radius_valley_offset = get_real(sim_param, "radius_valley_offset")
+    radius_valley_min_radius_include = get_real(sim_param, "radius_valley_min_radius_include")
+    radius_valley_max_radius_include = get_real(sim_param, "radius_valley_max_radius_include")
+    radius_valley_min_period_include = get_real(sim_param, "radius_valley_min_period_include")
+    radius_valley_max_period_include = get_real(sim_param, "radius_valley_max_period_include")
 
     depths_above = Float64[] # list for the transit depths of planets above the photoevaporation boundary in Carrera et al 2018
     depths_below = Float64[] # list for the transit depths of planets below the boundary
@@ -175,6 +185,16 @@ function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::
                     append!(duration_ratios_nonmmr, system_xi[j])
                 end
             end
+            
+            # To compute the radii delta to the radius valley, if the planet is within bounds:
+            for j in 1:length(system_radii)
+                period = system_P[j]
+                radius = system_radii[j]
+                if (radius_valley_min_radius_include <= radius <= radius_valley_max_radius_include) && (radius_valley_min_period_include <= period <= radius_valley_max_period_include)
+                    radius_delta_valley = radius_delta_from_period_radius_gap(radius, period; m=radius_valley_slope, Rgap0=radius_valley_offset)
+                    append!(radii_delta_from_valley_list, radius_delta_valley)
+                end
+            end
 
             # To separate the planets in the system as above and below the boundary:
             system_above_bools = [photoevap_boundary_Carrera2018(system_radii[x], system_P[x]) for x in 1:length(system_P)]
@@ -231,6 +251,7 @@ function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::
     stat["depths_above"] = depths_above
     stat["depths_below"] = depths_below
     stat["radii"] = radii
+    stat["radii_delta_valley"] = radii_delta_from_valley_list
     stat["radius_ratios"] = sqrt.(depth_ratios)
     stat["radius_ratios_above"] = sqrt.(depth_ratios_above)
     stat["radius_ratios_below"] = sqrt.(depth_ratios_below)
@@ -242,7 +263,7 @@ function calc_summary_stats_Kepler(stellar_catalog::DataFrame, planets_cleaned::
     return CatalogSummaryStatistics(stat, Dict{String,Any}())
 end
 
-ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned)
+ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned; sim_param=sim_param)
 
 
 
@@ -268,13 +289,13 @@ function calc_summary_stats_collection_Kepler(stellar_catalog::DataFrame, planet
 
     cssc = CatalogSummaryStatisticsCollection()
     cssc.star_id_samples["all"] = collect(1:size(stellar_catalog,1))
-    cssc.css_samples["all"] = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned)
+    cssc.css_samples["all"] = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned; sim_param=sim_param)
 
     for (i,name) in enumerate(names_samples)
         stellar_catalog_sample = stellar_catalog[star_id_samples[i],:]
         @time planets_cleaned_sample = keep_planet_candidates_given_sim_param(planet_catalog; sim_param=sim_param, stellar_catalog=stellar_catalog_sample)
         cssc.star_id_samples[name] = star_id_samples[i]
-        cssc.css_samples[name] = calc_summary_stats_Kepler(stellar_catalog_sample, planets_cleaned_sample)
+        cssc.css_samples[name] = calc_summary_stats_Kepler(stellar_catalog_sample, planets_cleaned_sample; sim_param=sim_param)
     end
     return cssc
 end
