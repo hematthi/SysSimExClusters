@@ -46,7 +46,7 @@ function setup_and_run_optimizer(run_number::Int64=parse(Int64,ARGS[1]); max_eva
 
     ##### To load the Kepler catalog:
 
-    ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned)
+    ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned; sim_param=sim_param)
 
 
 
@@ -55,6 +55,13 @@ function setup_and_run_optimizer(run_number::Int64=parse(Int64,ARGS[1]); max_eva
     active_param_true, weights, target_fitness, target_fitness_std = compute_weights_target_fitness_std_from_file_split_samples("Maximum_AMD_model_split_stars_weights_ADmod_$(AD_mod)_targs86760_evals100_all_pairs.txt", 4950, sim_param; names_samples=String[], dists_include_samples=[String[]], dists_include_all=dists_include, f=f)
 
     pop_size = length(active_param_true)*pop_per_param
+    
+    ##### Also include the radii difference from the radius valley:
+    # NOTE: this is included ad hoc here since the weights file does not have a weight for this distance term yet; use the same weight as the radii distribution for now
+    
+    push!(dists_include, "radii_delta_valley_KS")
+    weights["all"]["radii_delta_valley_KS"] = weights["all"]["radii_KS"]
+    #####
     
     
     
