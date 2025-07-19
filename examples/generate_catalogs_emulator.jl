@@ -19,16 +19,22 @@ include(joinpath(dir_path, "../src/optimization.jl"))
 #GP_file_name = "GP_train2000_meanf35.0_sigmaf2.7_lscales16.05_vol14.26_points100000_meanInf_stdInf_post-10.0.csv"
 
 # Fit some KS, 8 params:
-save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/Fit_some_KS/Params8_fix_highM/GP_best_models_100"
+#save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/Fit_some_KS/Params8_fix_highM/GP_best_models_100"
 
-GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some_KS/Params8_fix_highM/GP_files"
-GP_file_name = "GP_train2000_meanf25.0_sigmaf2.7_lscales2.45_vol112.9_points100000_meanInf_stdInf_post-13.0.csv"
+#GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some_KS/Params8_fix_highM/GP_files"
+#GP_file_name = "GP_train2000_meanf25.0_sigmaf2.7_lscales2.45_vol112.9_points100000_meanInf_stdInf_post-13.0.csv"
 
 # Fit some KS, 9 params:
-save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/Fit_some8_KS/Params9_fix_highM/GP_best_models_100"
+#save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/Fit_some8_KS/Params9_fix_highM/GP_best_models_100"
 
-GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8_KS/Params9_fix_highM/GP_files"
-GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales3.03_vol240.84_points10000_meanInf_stdInf_post-13.0.csv"
+#GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8_KS/Params9_fix_highM/GP_files"
+#GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales3.03_vol240.84_points10000_meanInf_stdInf_post-13.0.csv"
+
+# Fit some+1 KS, 9 params:
+save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/Fit_some8p1_KS/Params9_fix_highM/GP_best_models_100"
+
+GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8p1_KS/Params9_fix_highM/GP_files"
+GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales2.22_vol48.52_points10000_meanInf_stdInf_post-12.0.csv"
 
 GP_points = CSV.read(joinpath(GP_data_path, GP_file_name), DataFrame, comment="#")
 active_params_names = names(GP_points)[1:end-3]
@@ -48,7 +54,7 @@ num_targs = 86760
 dists_include = ["delta_f", "mult_CRPD_r", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
 #dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
 
-d_threshold, mean_f = 17., 30. #25., 35.
+d_threshold, mean_f = 18., 30.
 n_pass = 100 # number of simulations we want to pass the distance threshold
 n_save = 100 # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
 
@@ -61,7 +67,7 @@ f = open(joinpath(save_path, file_name), "w")
 
 ##### To load the Kepler catalog:
 
-ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned)
+ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned; sim_param=sim_param)
 
 
 
@@ -70,6 +76,13 @@ ssk = calc_summary_stats_Kepler(stellar_catalog, planets_cleaned)
 ##### To load a file with the weights:
 
 active_param_true, weights, target_fitness, target_fitness_std = compute_weights_target_fitness_std_from_file_split_samples("../src/Maximum_AMD_model_split_stars_weights_ADmod_$(AD_mod)_targs86760_evals100_all_pairs.txt", 4950, sim_param; names_samples=String[], dists_include_samples=[String[]], dists_include_all=dists_include, f=f)
+
+##### Also include the radii difference from the radius valley:
+# NOTE: this is included ad hoc here since the weights file does not have a weight for this distance term yet; use the same weight as the radii distribution for now
+
+push!(dists_include, "radii_delta_valley_KS")
+weights["all"]["radii_delta_valley_KS"] = weights["all"]["radii_KS"]
+#####
 
 
 
