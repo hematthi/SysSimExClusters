@@ -21,8 +21,8 @@ function setup_and_run_optimizer(run_number::Int64=parse(Int64,ARGS[1]); max_eva
     dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
     pop_per_param = 4
     
-    active_param_keys = ["log_rate_clusters", "log_rate_planets_per_cluster", "log_α_pret", "mean_ln_mass", "norm_radius", "power_law_P", "power_law_γ0", "power_law_σ0", "sigma_ln_mass"]
-    active_params_box = [(log(0.2), log(5.)), (log(0.2), log(5.)), (log(0.01), log(1000.)), (log(1.), log(100.)), (1., 5.), (-2., 2.), (0., 1.), (0., 0.5), (log(1.), log(100.))] # search ranges for all of the active parameters
+    active_param_keys = ["log_rate_clusters", "log_rate_planets_per_cluster", "log_α_pret", "mean_ln_mass", "norm_radius", "power_law_P", "power_law_γ0", "power_law_σ0", "sigma_ln_mass", "sigma_ln_mass_in_cluster"]
+    active_params_box = [(log(0.2), log(5.)), (log(0.2), log(5.)), (log(0.01), log(1000.)), (log(1.), log(100.)), (1., 5.), (-2., 2.), (0., 1.), (0., 0.5), (0., 3.), (0., 3.)] # search ranges for all of the active parameters
     
     #####
     

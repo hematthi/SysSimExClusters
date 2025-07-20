@@ -197,6 +197,7 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
     max_radius = get_real(sim_param, "max_radius")
     μ_mass = get_real(sim_param, "mean_ln_mass")
     σ_mass = get_real(sim_param, "sigma_ln_mass")
+    σ_mass_in_cluster = get_real(sim_param, "sigma_ln_mass_in_cluster")
     C = get_real(sim_param, "norm_radius")
     M_break1 = get_real(sim_param, "break1_mass")
     #M_break2 = get_real(sim_param, "break2_mass")
@@ -208,7 +209,11 @@ function generate_stable_cluster_radius_from_mass(star::StarT, sim_param::SimPar
     #σ2 = get_real(sim_param, "power_law_σ2")
 
     # Draw initial masses and radii:
-    M_init_dist = Truncated(LogNormal(μ_mass, σ_mass), min_mass, max_mass)
+    # NEW: first, draw a mass scale for the cluster:
+    M_cluster_dist = Truncated(LogNormal(μ_mass, σ_mass), min_mass, max_mass)
+    μ_mass_scale = log(rand(M_cluster_dist)) # ln of the cluster's mass scale
+    
+    M_init_dist = Truncated(LogNormal(μ_mass_scale, σ_mass_in_cluster), min_mass, max_mass)
     
     #M_init = rand(M_init_dist, n)
     #R_init = map(M -> draw_radius_given_mass_neil_rogers2020(M; C=C, M_break1=M_break1, M_break2=M_break2, γ0=γ0, γ1=γ1, γ2=γ2, σ0=σ0, σ1=σ1, σ2=σ2), M_init)

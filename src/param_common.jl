@@ -81,6 +81,7 @@ function add_sim_param_mass_and_radius_distribution_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "max_radius", 10.0) # Earth radii
     add_param_active(sim_param, "mean_ln_mass", 0.8) # ln(Earth masses)
     add_param_active(sim_param, "sigma_ln_mass", 1.3) # ln(Earth masses)
+    add_param_active(sim_param, "sigma_ln_mass_in_cluster", 0.1) # ln(Earth masses)
     add_param_active(sim_param, "norm_radius", 1.96) # Earth radii
     add_param_fixed(sim_param, "break1_mass", 20.) # Earth masses
     #add_param_fixed(sim_param, "break2_mass", 175.7) # Earth masses
@@ -289,6 +290,7 @@ function write_model_params(f, sim_param::SimParam)
         println(f, "# max_radius (R_earth): ", get_real(sim_param, "max_radius"))
         println(f, "# mean_ln_mass (ln M_earth): ", get_real(sim_param, "mean_ln_mass"))
         println(f, "# sigma_ln_mass (ln M_earth): ", get_real(sim_param, "sigma_ln_mass"))
+        println(f, "# sigma_ln_mass_in_cluster (ln M_earth): ", get_real(sim_param, "sigma_ln_mass_in_cluster"))
         println(f, "# norm_radius (R_earth): ", get_real(sim_param, "norm_radius"))
         println(f, "# break_mass (M_earth): ", get_real(sim_param, "break1_mass"))
         println(f, "# power_law_γ0: ", get_real(sim_param, "power_law_γ0"))
