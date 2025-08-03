@@ -36,6 +36,14 @@ save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_cata
 GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8p1_KS/Params9_fix_highM/GP_files"
 GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales2.22_vol48.52_points10000_meanInf_stdInf_post-12.0.csv"
 
+# Clustered initial masses, fit some+1 KS, 10 params:
+save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/GP_best_models_100"
+
+GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/GP_files"
+GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales3.85_vol9.72_points10000_meanInf_stdInf_post-18.0.csv"
+
+
+
 GP_points = CSV.read(joinpath(GP_data_path, GP_file_name), DataFrame, comment="#")
 active_params_names = names(GP_points)[1:end-3]
 active_params_best_all = GP_points[!,active_params_names]
@@ -51,10 +59,10 @@ rename!(active_params_best_all, Symbol.(active_params_names))
 model_name = "Hybrid1"
 AD_mod = true
 num_targs = 86760
-dists_include = ["delta_f", "mult_CRPD_r", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
+dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
 #dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
 
-d_threshold, mean_f = 18., 30.
+d_threshold, mean_f = 12., 30.
 n_pass = 100 # number of simulations we want to pass the distance threshold
 n_save = 100 # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
 

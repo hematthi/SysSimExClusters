@@ -257,6 +257,7 @@ mean_f = 30. # fit_all_KS
 
 
 
+#=
 data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8p1_KS/Params9_fix_highM/GP_files"
 
 # Not transformed:
@@ -264,6 +265,19 @@ hparams_best = [5.4, 1., 0.6, 1., 0.4, 0.4, 0.4, 0.1, 0.15, 0.4]/2
 prior_bounds = [(-1.6, 1.), (-0.6, 1.2), (0., 5.), (0., 1.6), (1., 3.), (-0.6, 1.2), (0., 0.4), (0., 0.5), (0.6, 2.4)]
 
 mean_f = 30. # fit_all_KS
+=#
+
+
+
+#
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [2.7, 0.5, 0.25, 1., 0.3, 0.4, 0.4, 0.1, 0.15, 0.5, 0.25] #/2
+prior_bounds = [(-1.6, 0.4), (0.3, 1.3), (0., 5.), (0., 1.2), (1., 2.5), (-0.6, 1.2), (0., 0.3), (0., 0.5), (1., 3.), (0., 1.)]
+
+mean_f = 30. # fit_all_KS
+#
 
 
 
