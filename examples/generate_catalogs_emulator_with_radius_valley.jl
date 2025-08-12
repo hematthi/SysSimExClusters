@@ -89,10 +89,10 @@ end
 ##### To load model parameters found using the GP emulator and simulate catalogs if they pass a distance threshold:
 
 # Clustered initial masses, fit some+1 KS, 10 params:
-save_path = "/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/GP_dtotmax12_depthmin0.46_models"
+run_path = "Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/"
 
-GP_data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/GP_files"
-GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales3.85_vol9.72_points10000_meanInf_stdInf_post-18.0.csv"
+GP_data_path = joinpath("/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization", run_path, "GP_files/")
+GP_file_name = "GP_train2000_meanf30.0_sigmaf2.7_lscales3.85_vol9.72_points100000_meanInf_stdInf_post-15.0.csv"
 
 
 
@@ -106,12 +106,14 @@ num_targs = 86760
 dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
 #dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
 
-d_threshold, mean_f = 12., 30.
-radii_delta_depth_threshold = 0.46 # approximately the 90th percentile of the generated catalogs (and about 80% of the depth for the Kepler distribution)
+d_threshold, mean_f = 15., 30.
+radii_delta_depth_threshold = 0.29
 bw_factor = 0.25
 
-n_pass = 100 # number of simulations we want to pass the distance threshold
+n_pass = 1000 # number of simulations we want to pass the distance threshold
 n_save = n_pass # number of simulations we want to pass the distance threshold and also save (choose a small number or else requires a lot of storage space); must not be greater than n_pass!
+
+save_path = joinpath("/Users/hematthi/Documents/GradSchool/Research/SysSim/Simulated_catalogs", run_path, "GP_dtotmax$(d_threshold)_depthmin$(radii_delta_depth_threshold)_models/")
 
 file_name = model_name*"_pass_GP_meanf$(mean_f)_thres$(d_threshold)_mindepth$(radii_delta_depth_threshold)_pass$(n_pass)_targs$(num_targs).txt"
 f = open(joinpath(save_path, file_name), "w")
@@ -162,7 +164,7 @@ println(f, "#")
 sim_count = 0
 pass_count = 0
 save_count = 0
-summary_array = Array{Float64,2}(undef, 0, size(GP_points,2)+1)
+summary_array = Array{Float64,2}(undef, 0, size(GP_points,2)+2)
 
 t_elapsed = @elapsed begin
     while pass_count < n_pass && sim_count < size(active_params_best_all,1)
@@ -209,7 +211,7 @@ t_elapsed = @elapsed begin
 
         # Write the total distance and measured depth to file:
         println(f, "Total_dist_w: ", [d_tot_w])
-        println(f, "radii_delta_depth: ", [d_tot_w])
+        println(f, "radii_delta_depth: ", [radii_delta_depth])
         println(f, "#")
 
 
@@ -230,12 +232,12 @@ t_elapsed = @elapsed begin
             println("$sim_count: d_tot_w = $d_tot_w, depth = $radii_delta_depth")
         end
 
-        summary_array = vcat(summary_array, reshape([[GP_points[sim_count,j] for j in 1:size(GP_points,2)]; d_tot_w - mean_f], (1,size(GP_points,2)+1)))
+        summary_array = vcat(summary_array, reshape([[GP_points[sim_count,j] for j in 1:size(GP_points,2)]; d_tot_w - mean_f; radii_delta_depth], (1,size(GP_points,2)+2)))
     end
 end
 
 println(f, "# elapsed time: ", t_elapsed, " seconds")
 close(f)
 
-summary_table = DataFrame(summary_array, [names(GP_points); "dist_tot_weighted"])
+summary_table = DataFrame(summary_array, [names(GP_points); "dist_tot_weighted"; "radii_delta_depth"])
 CSV.write(joinpath(save_path, "Simulate_GP_points_summary.txt"), summary_table)
