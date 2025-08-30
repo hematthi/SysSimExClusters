@@ -18,7 +18,7 @@ function setup_and_run_optimizer(run_number::Int64=parse(Int64,ARGS[1]); max_eva
     model_name = "Hybrid1"
     AD_mod = true
     num_targs = 86760
-    dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
+    dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
     pop_per_param = 4
     
     active_param_keys = ["log_rate_clusters", "log_rate_planets_per_cluster", "log_α_pret", "mean_ln_mass", "norm_radius", "power_law_P", "power_law_γ0", "power_law_σ0", "sigma_ln_mass", "sigma_ln_mass_in_cluster"]
