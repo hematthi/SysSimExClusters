@@ -14,8 +14,7 @@ sim_param = setup_sim_param_model()
 model_name = "Hybrid1"
 AD_mod = true
 num_targs = 86760
-dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
-#dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS", "gap_complexity_KS"]
+dists_include = ["delta_f", "mult_CRPD_r", "periods_KS", "period_ratios_KS", "durations_KS", "duration_ratios_KS", "depths_KS", "radii_KS", "radius_ratios_KS", "radii_partitioning_KS", "radii_monotonicity_KS"]
 
 data_table = CSV.read("../emulator/GP_files/Active_params_distances_table_best10000_every1.txt", DataFrame)
 params_keys = names(data_table)[1:end-1]
