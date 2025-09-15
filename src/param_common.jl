@@ -40,9 +40,9 @@ function add_sim_param_rates_of_planetary_systems_and_clusters_and_planets!(sim_
     add_param_fixed(sim_param, "med_color", 0.81)
     add_param_fixed(sim_param, "generate_num_clusters", generate_num_clusters_ZTP)
     add_param_fixed(sim_param, "generate_num_planets_in_cluster", generate_num_planets_in_cluster_ZTP)
-    add_param_active(sim_param, "log_rate_clusters", log(0.9))
+    add_param_active(sim_param, "log_rate_clusters", log(0.74))
     add_param_fixed(sim_param, "max_clusters_in_sys", 20)
-    add_param_active(sim_param, "log_rate_planets_per_cluster", log(1.65))
+    add_param_active(sim_param, "log_rate_planets_per_cluster", log(1.82))
     add_param_fixed(sim_param, "max_planets_in_cluster", 20)
 end
 
@@ -51,7 +51,7 @@ function add_sim_param_period_distribution!(sim_param::SimParam)
     add_param_fixed(sim_param, "min_period", 3.0)
     add_param_fixed(sim_param, "max_period", 300.0)
     #add_param_fixed(sim_param, "break_period", 10.0)
-    add_param_active(sim_param, "power_law_P", 0.)
+    add_param_active(sim_param, "power_law_P", -0.1)
     #add_param_fixed(sim_param, "power_law_P1", 2.0)
     #add_param_fixed(sim_param, "power_law_P2", 0.5)
     add_param_fixed(sim_param, "sigma_logperiod_per_pl_in_cluster", 0.25)
@@ -79,23 +79,23 @@ function add_sim_param_mass_and_radius_distribution_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "max_mass", 1e3) # Earth masses
     add_param_fixed(sim_param, "min_radius", 0.5) # Earth radii
     add_param_fixed(sim_param, "max_radius", 10.0) # Earth radii
-    add_param_active(sim_param, "mean_ln_mass", 0.8) # ln(Earth masses)
-    add_param_active(sim_param, "sigma_ln_mass", 1.3) # ln(Earth masses)
-    add_param_active(sim_param, "sigma_ln_mass_in_cluster", 0.1) # ln(Earth masses)
-    add_param_active(sim_param, "norm_radius", 1.96) # Earth radii
+    add_param_active(sim_param, "mean_ln_mass", 0.3) # ln(Earth masses)
+    add_param_active(sim_param, "sigma_ln_mass", 1.8) # ln(Earth masses)
+    add_param_active(sim_param, "sigma_ln_mass_in_cluster", 0.25) # ln(Earth masses)
+    add_param_active(sim_param, "norm_radius", 2.25) # Earth radii
     add_param_fixed(sim_param, "break1_mass", 20.) # Earth masses
     #add_param_fixed(sim_param, "break2_mass", 175.7) # Earth masses
-    add_param_active(sim_param, "power_law_γ0", 0.15)
+    add_param_active(sim_param, "power_law_γ0", 0.04)
     add_param_fixed(sim_param, "power_law_γ1", 0.5)
     #add_param_fixed(sim_param, "power_law_γ2", 0.04)
-    add_param_active(sim_param, "power_law_σ0", 0.15)
+    add_param_active(sim_param, "power_law_σ0", 0.23)
     add_param_fixed(sim_param, "power_law_σ1", 0.3)
     #add_param_fixed(sim_param, "power_law_σ2", 0.10)
 end
 
 function add_sim_param_photoevaporation_NR20!(sim_param::SimParam)
     add_param_fixed(sim_param, "system_age", 5.) # Gyr
-    add_param_active(sim_param, "log_α_pret", log(8.)) # fudge factor for the envelope retention probability
+    add_param_active(sim_param, "log_α_pret", log(4.5)) # fudge factor for the envelope retention probability
 end
 
 function add_sim_param_radius_valley_stats!(sim_param::SimParam)
