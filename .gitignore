@@ -13,3 +13,4 @@ examples/*.csv
 Examples/test/
 emulator/GP_files
 debug/
+.idea/

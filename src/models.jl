@@ -1,5 +1,5 @@
 include("models_components.jl")
-include("models_test.jl")
+include("models_hybrid.jl")
 include("conditional.jl")
 
 function generate_planetary_system_clustered_periods_and_sizes_distribute_amd(star::StarAbstract, sim_param::SimParam; verbose::Bool=false)
