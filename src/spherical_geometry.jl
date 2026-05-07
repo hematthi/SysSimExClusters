@@ -122,6 +122,40 @@ function calc_sky_incl_Ω_orbits_given_system_vector(i_m_list::Vector{Float64}, 
 end
 
 """
+    calc_incl_Ω_relative_to_system_invariable_plane(period_list, mass_list, ecc_list, incl_list, Ω_list; star_mass)
+
+Calculate the inclination and orientation relative to the system invariable plane for all the orbits in the system, given a planetary system with orbital elements specified in the sky plane.
+
+# Arguments:
+- `period_list::Vector{Float64}`: a list of orbital periods (days).
+- `mass_list::Vector{Float64}`: a list of planet masses (any units).
+- `ecc_list::Vector{Float64}`: a list of orbital eccentricities.
+- `incl_list::Vector{Float64}`: a list of inclinations (radians) relative to the sky plane.
+- `Ω_list::Vector{Float64}`: a list of arguments of ascending nodes (radians) in the sky plane.
+- `star_mass::Float64 = 1.`: the stellar mass (solar masses).
+
+# Returns:
+- `incl_invariable_list::Vector{Float64}`: list of orbit inclinations (rad) relative to the system invariable plane.
+- `Ω_invariable_list::Vector{Float64}`: list of arguments of ascending node (rad) relative to the system invariable plane.
+"""
+function calc_incl_Ω_relative_to_system_invariable_plane(period_list::Vector{Float64}, mass_list::Vector{Float64}, ecc_list::Vector{Float64}, incl_list::Vector{Float64}, Ω_list::Vector{Float64}; star_mass::Float64=1.)
+    n = length(period_list)
+    @assert(n == length(mass_list) == length(ecc_list) == length(incl_list) == length(Ω_list) > 1)
+
+    vec_orb_list = map(i -> calc_orbit_vector_given_system_vector(incl_list[i], Ω_list[i], [0.,0.,1.]), 1:n) # unit normals of each planet's orbital plane
+    a_list = map(i -> semimajor_axis(period_list[i], star_mass), 1:n) # semi-major axes, in AU
+    b_list = map(i -> a_list[i]*sqrt((1 - ecc_list[i])*(1 + ecc_list[i])), 1:n) # semi-minor axes, in AU
+    L_list = map(i -> mass_list[i]*b_list[i]*sqrt(ExoplanetsSysSim.G_mass_sun_in_mks*star_mass / a_list[i]), 1:n) # angular momentum (magnitude) of each planet's orbit, as calculated from the Vis-viva equation
+    Lvec_sys = sum(L_list .* vec_orb_list) # angular momentum vector of the system
+    vec_invariable = Lvec_sys ./ norm(Lvec_sys) # unit normal to system invariable plane
+
+    incl_invariable_list = map(vec_orb -> calc_angle_between_vectors(vec_invariable, vec_orb), vec_orb_list) # mutual inclinations relative to system invariable plane
+    Ω_invariable_list = map(vec_orb -> calc_Ω_in_plane(vec_orb, vec_invariable), vec_orb_list) # ascending nodes relative to system invariable plane
+    return incl_invariable_list, Ω_invariable_list
+end
+
+
+"""
     calc_incl_Ω_relative_to_system_invariable_plane(sys)
 
 Calculate the inclination and orientation relative to the system invariable plane for all the orbits in the system, given a planetary system with orbital elements specified in the sky plane.
@@ -140,15 +174,12 @@ function calc_incl_Ω_relative_to_system_invariable_plane(sys::PlanetarySystem)
     if n == 1
         incl_invariable_list, Ω_invariable_list = [0.], [0.]
     else
-        vec_orb_list = map(i -> calc_orbit_vector_given_system_vector(sys.orbit[i].incl, sys.orbit[i].asc_node, [0.,0.,1.]), 1:n) # unit normals of each planet's orbital plane
-        alist = map(i -> semimajor_axis(sys.orbit[i].P, sys.star.mass), 1:n)
-        blist = map(i -> alist[i]*sqrt((1 - sys.orbit[i].ecc)*(1 + sys.orbit[i].ecc)), 1:n) # semi-minor axis of each planet's orbit
-        Llist = map(i -> sys.planet[i].mass * blist[i] * sqrt(ExoplanetsSysSim.G_mass_sun_in_mks*sys.star.mass / alist[i]), 1:n) # angular momentum (magnitude) of each planet's orbit, as calculated from the Vis-viva equation
-        Lvec_sys = sum(Llist .* vec_orb_list) # angular momentum vector of the system
-        vec_invariable = Lvec_sys ./ norm(Lvec_sys) # unit normal to system invariable plane
-
-        incl_invariable_list = map(vec_orb -> calc_angle_between_vectors(vec_invariable, vec_orb), vec_orb_list) # mutual inclinations relative to system invariable plane
-        Ω_invariable_list = map(vec_orb -> calc_Ω_in_plane(vec_orb, vec_invariable), vec_orb_list) # ascending nodes relative to system invariable plane
+        period_list = map(i -> sys.orbit[i].P, 1:n)
+        mass_list = map(i -> sys.planet[i].mass, 1:n)
+        ecc_list = map(i -> sys.orbit[i].ecc, 1:n)
+        incl_list = map(i -> sys.orbit[i].incl, 1:n)
+        Ω_list = map(i -> sys.orbit[i].asc_node, 1:n)
+        incl_invariable_list, Ω_invariable_list = calc_incl_Ω_relative_to_system_invariable_plane(period_list, mass_list, ecc_list, incl_list, Ω_list; star_mass=sys.star.mass)
     end
     return incl_invariable_list, Ω_invariable_list
 end

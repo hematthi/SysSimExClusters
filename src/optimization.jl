@@ -74,12 +74,11 @@ Simulate a catalog with the parameters in `active_param` and compute the distanc
 function simulate_catalog_and_calc_all_distances_dict(active_param::Vector{Float64}, sim_param::SimParam; ss_fit::CatalogSummaryStatistics, AD_mod::Bool=true)
 
     # Generate a simulated catalog with the input model parameters in 'active_param':
-    sim_param_here = deepcopy(sim_param)
-    ExoplanetsSysSim.update_sim_param_from_vector!(active_param,sim_param_here)
-    cat_phys = generate_kepler_physical_catalog(sim_param_here)
-    cat_phys_cut = ExoplanetsSysSim.generate_obs_targets(cat_phys,sim_param_here)
-    cat_obs = observe_kepler_targets_single_obs(cat_phys_cut,sim_param_here)
-    summary_stat = calc_summary_stats_model(cat_obs,sim_param_here)
+    ExoplanetsSysSim.update_sim_param_from_vector!(active_param,sim_param)
+    cat_phys = generate_kepler_physical_catalog(sim_param)
+    cat_phys_cut = ExoplanetsSysSim.generate_obs_targets(cat_phys,sim_param)
+    cat_obs = observe_kepler_targets_single_obs(cat_phys_cut,sim_param)
+    summary_stat = calc_summary_stats_model(cat_obs,sim_param)
 
     # Compute the distances between the simulated catalog and 'ss_fit':
     dists, counts = calc_all_distances_dict(sim_param, summary_stat, ss_fit; AD_mod=AD_mod)

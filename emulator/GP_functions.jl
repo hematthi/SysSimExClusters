@@ -2,9 +2,11 @@ using LinearAlgebra
 using Random
 using DataFrames
 using CSV
-using Sobol
+#using Sobol
+#using Optim
 using Statistics
 using Distributed
+using ProgressMeter
 
 
 
@@ -93,14 +95,14 @@ function compute_kernel_given_data(xdata::Array{Float64,2}, kernel::Function, hp
     K = kernel(xdata, xdata, hparams)
     var_I = zeros(size(K))
     var_I[diagind(var_I)] = ydata_err.^2
-    L = transpose(cholesky(K + var_I).U)
+    L = cholesky(K + var_I).L #####transpose(cholesky(K + var_I).U)
     return L
 end
 
 """
 Does the same thing as the function 'draw_from_posterior_given_kernel_and_data', but takes in a precomputed cholesky decomposition matrix 'L' to save time.
 """
-function draw_from_posterior_given_precomputed_kernel_from_data(xpoints::Array{Float64,2}, xdata::Array{Float64,2}, ydata::Vector{Float64}, L::Transpose{Float64,UpperTriangular{Float64,Array{Float64,2}}}, kernel::Function, hparams::Vector{Float64}; diag_noise::Float64=1e-5, draws::Integer=1)
+function draw_from_posterior_given_precomputed_kernel_from_data(xpoints::Array{Float64,2}, xdata::Array{Float64,2}, ydata::Vector{Float64}, L::LowerTriangular{Float64,Matrix{Float64}}, kernel::Function, hparams::Vector{Float64}; diag_noise::Float64=1e-5, draws::Integer=1)
     @assert size(xdata, 1) == length(ydata)
 
     K_ss = kernel(xpoints, xpoints, hparams)
@@ -223,7 +225,7 @@ end
 """
 Uses a GP model (i.e. a given kernel and set of hyperparameters) with a pre-computed cholesky decomposition matrix 'L' and a set of data points, to compute the mean, standard deviation, and a draw from the posterior at points drawn from a uniform prior until a point passing the criteria for the mean and std is accepted.
 """
-function predict_model_from_uniform_prior_until_accept_point(prior_bounds::Array{Tuple{Float64,Float64},1}, xdata::Array{Float64,2}, ydata::Vector{Float64}, kernel::Function, hparams::Vector{Float64}, L::Transpose{Float64,UpperTriangular{Float64,Array{Float64,2}}}, ydata_err::Vector{Float64}; n_accept::Int64=1, max_mean::Float64=Inf, max_std::Float64=Inf, max_post::Float64=Inf)
+function predict_model_from_uniform_prior_until_accept_point(prior_bounds::Array{Tuple{Float64,Float64},1}, xdata::Array{Float64,2}, ydata::Vector{Float64}, kernel::Function, hparams::Vector{Float64}, L::LowerTriangular{Float64,Matrix{Float64}}, ydata_err::Vector{Float64}; n_accept::Int64=1, max_mean::Float64=Inf, max_std::Float64=Inf, max_post::Float64=Inf)
     @assert size(xdata, 1) == length(ydata) == length(ydata_err)
     dims = size(xdata, 2)
 
@@ -262,9 +264,11 @@ function predict_model_from_uniform_prior_until_accept_n_points(params_names::Ar
 
     prior_draws_GP_table = Array{Float64,2}(undef, n_accept, dims+3)
     count_draws = 0
-    for i in 1:n_accept
+    p = Progress(n_accept; dt=1.0)
+    @showprogress for i in 1:n_accept
         prior_draws_GP_table[i, 1:end], counts = predict_model_from_uniform_prior_until_accept_point(prior_bounds, xdata, ydata, kernel, hparams, L, ydata_err; max_mean=max_mean, max_std=max_std, max_post=max_post)
         count_draws += counts
+        next!(p)
 
         if i == 10
             println("First ", i, " points accepted after ", count_draws, " draws...")
@@ -296,8 +300,25 @@ function predict_model_from_uniform_prior_until_accept_n_points_parallel(params_
     println("Number of procs: ", nprocs())
     prior_draws_GP_table = SharedArray{Float64,2}(n_accept, dims+3)
     draws_per_accept = SharedArray{Int64,1}(n_batch)
-    @sync @distributed for i in 1:n_batch
-        prior_draws_GP_table[1+(i-1)*n_per_batch:i*n_per_batch,:], draws_per_accept[i] = predict_model_from_uniform_prior_until_accept_point(prior_bounds, xdata, ydata, kernel, hparams, L, ydata_err; n_accept=n_per_batch, max_mean=max_mean, max_std=max_std, max_post=max_post)
+    # Set up the progress bar (see "https://github.com/timholy/ProgressMeter.jl" under "Tips for parallel programming"):
+    p = Progress(n_batch; dt=1.0, showspeed=true)
+    channel = RemoteChannel(() -> Channel{Bool}(), 1)
+    @sync begin
+        # First task updates the progress bar:
+        @async while take!(channel)
+            next!(p)
+        end
+        
+        # Second task does the actual computation:
+        # Note: need either '@sync' or a reduction operation for the '@distributed' for-loop in order to make this work! The 'put!(channel, false)' must execute only after the entire loop is finished.
+        @async begin
+            println("Starting the distributed for-loop...")
+            @sync @distributed for i in 1:n_batch
+                prior_draws_GP_table[1+(i-1)*n_per_batch:i*n_per_batch,:], draws_per_accept[i] = predict_model_from_uniform_prior_until_accept_point(prior_bounds, xdata, ydata, kernel, hparams, L, ydata_err; n_accept=n_per_batch, max_mean=max_mean, max_std=max_std, max_post=max_post)
+                put!(channel, true) # trigger a progress bar update
+            end
+            put!(channel, false) # ends the while loop from the first task so all is done
+        end
     end
     count_draws = sum(draws_per_accept)
 

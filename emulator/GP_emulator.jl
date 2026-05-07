@@ -3,27 +3,26 @@
 include("GP_functions.jl")
 
 using PyPlot
-using Optim
 
 
 
 
 
 function load_data(dims::Int64, data_path::String)
-    data_table_original =  CSV.read(joinpath(data_path,"Active_params_distances_table_best100000_every10.txt"), comment="#")
-    data_table_recomputed = CSV.read(joinpath(data_path,"Active_params_recomputed_distances_table_best100000_every10.txt"), comment="#")
+    data_table_original =  CSV.read(joinpath(data_path,"Active_params_distances_table_best10000_every1.txt"), comment="#", DataFrame)
+    data_table_recomputed = CSV.read(joinpath(data_path,"Active_params_recomputed_distances_table_best10000_every1.txt"), comment="#", DataFrame)
 
     params_names = names(data_table_recomputed)[1:dims]
     dists_names = names(data_table_recomputed)[dims+1:end]
 
-    params_array_original = convert(Matrix, data_table_original[1:end, params_names])
+    params_array_original = Matrix(data_table_original[1:end, params_names])
     dist_array_original = convert(Array, data_table_original[1:end, :dist_tot_weighted])
 
-    params_array = convert(Matrix, data_table_recomputed[1:end, params_names])
+    params_array = Matrix(data_table_recomputed[1:end, params_names])
     dist_array = convert(Array, data_table_recomputed[1:end, :dist_tot_weighted])
 
     # If we want to transform some parameters by sum and difference:
-    transform_sum_diff_params!(params_names, params_array, 4, 5) #####
+    #####transform_sum_diff_params!(params_names, params_array, 2, 3) #####
 
     data = Dict()
     data[:params_names] = params_names
@@ -208,18 +207,93 @@ end
 
 
 
-data_path = "GP_files"
+#=
+data_path = "/Users/hematthi/Documents/NotreDame_Postdoc/CRC/Files/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params12/GP_files"
 prior_bounds = nothing
 
 # Transformed:
-hparams_best = [2.7, 0.2, 1., 1., 1.5, 3., 1., 0.5, 1., 0.2, 0.15, 0.15]
-prior_bounds = [(0.6, 1.), (-0.6, 2.), (-1., 2.), (-1.5, 3.), (6., 15.), (-0.8, 1.6), (-2., -0.5), (-6., -3.), (0., 0.5), (0.1, 0.5), (0.1, 0.5)]
+hparams_best = [2.7, 30., 1., 1.5, 1., 1., 1., 0.2, 0.4, 0.15, 0.2, 1., 0.2] #, 30.] # if also including alpha_ret
+prior_bounds = [(1., 100.), (-1., 1.), (-1., 3.), (0., 3.), (1., 3.), (-0.8, 1.6), (0., 0.5), (0., 1.), (0.1, 0.5), (0., 0.5), (0.5, 3.), (0., 0.5)] #, (1., 100.)] # if also including alpha_ret
+
+mean_f = 35. # fit_all_KS
+#mean_f = 90. # fit_split_KS
+=#
+
+
+
+#=
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_all_KS/Params8/GP_files"
+
+hparams_best = [5.4, 30., 0.3, 0.5, 0.15, 0.4, 0.15, 0.2, 0.4]/2
+#prior_bounds = [(1., 100.), (0.2, 1.2), (1., 2.5), (0., 0.4), (0., 1.), (0.1, 0.5), (0., 0.5), (1., 2.2)]
+prior_bounds = [(1., 100.), (0., 1.5), (1., 3.), (0., 0.5), (0., 1.), (0., 0.5), (0., 0.5), (0.5, 2.5)]
+
+mean_f = 35. # fit_all_KS
+=#
+
+
+
+#=
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some_KS/Params8_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [5.4, 1., 1., 1.5, 0.3, 0.4, 0.15, 0.15, 0.4]/2
+prior_bounds = [(-1.6, 1.2), (-1.6, 1.2), (0., 6.), (0., 1.5), (1., 3.), (0., 0.8), (0., 0.5), (0., 2.)]
+
+mean_f = 25. # fit_all_KS
+=#
+
+
+
+#=
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8_KS/Params9_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [5.4, 1., 1., 2., 0.4, 0.4, 0.6, 0.1, 0.15, 0.4]/2
+prior_bounds = [(-1.6, 1.2), (-1.6, 1.2), (-2., 6.), (0., 2.), (1., 3.), (-0.6, 1.8), (0., 0.4), (0., 0.5), (0.5, 2.5)]
+
+mean_f = 30. # fit_all_KS
+=#
+
+
+
+#=
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/Fit_some8p1_KS/Params9_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [2.7, 1., 0.6, 1., 0.4, 0.4, 0.4, 0.1, 0.15, 0.4] #/2
+prior_bounds = [(-1.6, 1.), (-0.6, 1.2), (0., 5.), (0., 1.6), (1., 3.), (-0.6, 1.2), (0., 0.4), (0., 0.5), (0.6, 2.4)]
+
+mean_f = 35. #30. # fit_all_KS
+=#
+
+
+
+#=
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_some8p1_KS/Params10_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [2.7, 0.5, 0.25, 1., 0.3, 0.4, 0.4, 0.1, 0.15, 0.5, 0.25] #/2
+prior_bounds = [(-1.6, 0.4), (0.3, 1.3), (0., 5.), (0., 1.2), (1., 2.5), (-0.6, 1.2), (0., 0.3), (0., 0.5), (1., 3.), (0., 1.)]
+
+mean_f = 30. # fit_all_KS
+=#
+
+
+
+#
+data_path = "/Users/hematthi/Documents/NPP_ARC_Modernize_Kepler/Personal_research/SysSim/Model_Optimization/Hybrid_NR20_AMD_model1/clustered_initial_masses/Fit_all12_KS/Params10_fix_highM/GP_files"
+
+# Not transformed:
+hparams_best = [2.7, 0.5, 0.25, 1., 0.3, 0.4, 0.4, 0.1, 0.15, 0.5, 0.25] #/2
+prior_bounds = [(-1.6, 0.4), (0.3, 1.3), (0., 5.), (0., 1.2), (1., 2.5), (-0.6, 1.2), (0., 0.3), (0., 0.5), (1., 3.), (0., 1.)]
+
+mean_f = 35. # fit_all_KS
+#
 
 
 
 
 
-dims = 11
-mean_f = 75. # KS
-#mean_f = 150. # AD
+dims = length(prior_bounds)
 GP_model = train_GP_emulator(; dims=dims, data_path=data_path, f_err=2.7, n_train=2000, n_cv=2000, mean_f=mean_f, kernel=kernel_SE_ndims, hparams_best=hparams_best, optimize_hparams=false, make_plots=false)

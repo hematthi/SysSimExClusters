@@ -176,6 +176,30 @@ function save_stellar_radii_with_planets_all(cat_phys::KeplerPhysicalCatalog, si
     close(f)
 end
 
+function save_planet_params_extra_all(cat_phys::KeplerPhysicalCatalog, sim_param::SimParam; save_path::String="", run_number::Union{String,Int64}="")
+
+    planet_params_extra_save_fnames = ["initial_radii_all", "initial_masses_all", "envelope_masses_all", "mass_loss_timescales_all", "prob_retained_all", "envelope_retained_all"]
+    planet_params_extra_names = fieldnames(ExoplanetsSysSim.PlanetParamsExtra)
+    planet_params_extra_types = ExoplanetsSysSim.PlanetParamsExtra.types
+
+    @assert length(planet_params_extra_save_fnames) == length(planet_params_extra_names) == length(planet_params_extra_types)
+
+    for (n, fname) in enumerate(planet_params_extra_save_fnames)
+        f = open(joinpath(save_path, fname*"$run_number.out"), "w")
+        write_model_params(f, sim_param)
+        for (i,targ) in enumerate(cat_phys.target)
+            if length(targ.sys[1].planet) > 0
+                param_sys = Array{planet_params_extra_types[n]}(undef, length(targ.sys[1].planet))
+                for (j,planet) in enumerate(targ.sys[1].planet)
+                    param_sys[j] = getfield(planet.params_extra, planet_params_extra_names[n])
+                end
+                println(f, param_sys)
+            end
+        end
+        close(f)
+    end
+end
+
 function save_physical_catalog_given_cat_phys(cat_phys::KeplerPhysicalCatalog, sim_param::SimParam; save_path::String="", run_number::Union{String,Int64}="")
 
     save_physical_catalog(cat_phys, sim_param; save_path=save_path, run_number=run_number)
@@ -188,6 +212,8 @@ function save_physical_catalog_given_cat_phys(cat_phys::KeplerPhysicalCatalog, s
     save_inclinations_all(cat_phys, sim_param; save_path=save_path, run_number=run_number)
     save_radii_all(cat_phys, sim_param; save_path=save_path, run_number=run_number)
     save_masses_all(cat_phys, sim_param; save_path=save_path, run_number=run_number)
+    
+    save_planet_params_extra_all(cat_phys, sim_param; save_path=save_path, run_number=run_number)
 
     save_stellar_radii_with_planets_all(cat_phys, sim_param; save_path=save_path, run_number=run_number)
     save_stellar_masses_with_planets_all(cat_phys, sim_param; save_path=save_path, run_number=run_number)

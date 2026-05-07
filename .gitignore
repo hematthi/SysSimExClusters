@@ -1,12 +1,16 @@
+.DS_Store
 *.jl.cov
 *.jl.*.cov
 *.jl.mem
 deps/deps.jl
 *.jl~
-Manifest.toml
 julia_types
 libcorbits.so
 profile*
+src/*.txt
 examples/*.out
 examples/*.csv
+Examples/test/
 emulator/GP_files
+debug/
+.idea/

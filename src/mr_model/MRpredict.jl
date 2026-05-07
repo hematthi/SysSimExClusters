@@ -248,7 +248,7 @@ end
 
 ##### To initialize the M-R model parameters:
 
-weights_mle = CSV.read(joinpath(dir_path_MR, "weights.mle.csv"))[!,:x]
+weights_mle = CSV.read(joinpath(dir_path_MR, "weights.mle.csv"), DataFrame)[!,:x]
 degrees = 55
 
 N_keep = 25
@@ -370,7 +370,7 @@ close(f)
 
 ##### To load a pre-computed table for interpolating the mass radius relation:
 
-log_Mass_table = CSV.read(joinpath(dir_path_MR, "MRpredict_table_weights3025_R1001_Q1001.txt"), header=3)
+log_Mass_table = CSV.read(joinpath(dir_path_MR, "MRpredict_table_weights3025_R1001_Q1001.txt"), DataFrame, header=3)
 
 #One way to do the interpolation is to use "GridInterpolations" but this is very slow:
 #=
@@ -396,7 +396,7 @@ N_quantiles = 1001
 log_Radii = range(MR_param.Radius_min, stop=MR_param.Radius_max, length=N_radii)
 quantiles = range(0., stop=1.0, length=N_quantiles)
 
-table_data = convert(Matrix, log_Mass_table[1:end,2:end])
+table_data = Matrix(log_Mass_table[1:end,2:end]) #convert(Matrix, log_Mass_table[1:end,2:end])
 itp = interpolate(table_data, BSpline(Cubic(Line(OnGrid())))) #interpolation object where the x and y axes are indices
 scaled_itp = Interpolations.scale(itp, log_Radii, quantiles) #scaled interpolation object where the x and y axes are scaled to their physical units
 
@@ -424,7 +424,7 @@ density_given_mass_radius(M::Float64, R::Float64) = (M*earth_mass_in_g) / ((4π/
 
 
 # To load Li Zeng's M-R tables:
-MR_earthlike_rocky = CSV.read(joinpath(dir_path_MR, "MR_earthlike_rocky.txt"), delim="\t", comment="#", header=["mass","radius"]) # Earth units
+MR_earthlike_rocky = CSV.read(joinpath(dir_path_MR, "MR_earthlike_rocky.txt"), DataFrame, delim="\t", comment="#", header=["mass","radius"]) # Earth units
 
 # To construct an interpolation function for planet mass as a function of radius:
 using Dierckx
