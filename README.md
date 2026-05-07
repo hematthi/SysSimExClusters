@@ -9,8 +9,9 @@ We develop and provide several *statistical* models for describing the intrinsic
 * [He, Ford, and Ragozzine (2019), MNRAS, 490, 4575 (30pp)](https://ui.adsabs.harvard.edu/abs/2019MNRAS.490.4575H/abstract) ("Paper I") \[[arXiv](https://arxiv.org/abs/1907.07773)\]
 * [He, Ford, and Ragozzine (2021a)\*, AJ, 161, 16 (24pp)](https://ui.adsabs.harvard.edu/abs/2021AJ....161...16H/abstract) ("Paper II") \[[arXiv](https://arxiv.org/abs/2003.04348)\]
 * [He et al. (2020), AJ, 160, 276 (38pp)](https://ui.adsabs.harvard.edu/abs/2020AJ....160..276H/abstract) ("Paper III") \[[arXiv](https://arxiv.org/abs/2007.14473)\]
+* [He and Ford (2026), ApJ, 1001, 78 (34pp)](https://ui.adsabs.harvard.edu/abs/2026ApJ..1001...78H/abstract) ("Paper IV") \[[arXiv](https://arxiv.org/abs/2601.13480)\]
 
-\*Paper II was published shortly after Paper III due to an extended referee process, but the most updated model is the one described in Paper III.
+\*Paper II was published shortly after Paper III due to an extended referee process.
 
 In addition to these papers describing the new models, the simulated catalogs from these models have been directly used for several other publications:
 
@@ -26,16 +27,17 @@ In addition to these papers describing the new models, the simulated catalogs fr
 * "He_Ford_Ragozzine_2020" branch for He, Ford, and Ragozzine (2021a)
 * "He_et_al_2020" branch for He et al. (2020)
 * "He_Ford_Ragozzine_2021b" branch for He, Ford, and Ragozzine (2021b)\**
+* "He_Ford_2026" branch for He \& Ford (2026)
 
 \**This branch does not introduce any new models, but enables the option of drawing systems from a model *conditioned* on a given planet (e.g. within a period and radius range, transiting or not, etc.).
 
-These should be used if you want to run our code instead of the master branch, which is actively being updated. In addition, the README file is different for each branch, and we provide more details for the models and code usage specific to each paper/branch.
+These should be used if you want to run our code instead of the master branch, which may be actively updated. In addition, the README file is different for each branch, and we provide more details for the models and code usage specific to each paper/branch. **He and Ford (2026) contains the most recent models (the "hybrid models") and thus we recommend using the "He_Ford_2026" branch for simulating new catalogs.**
 
 
 
 ## How do I use these models?
 
-We provide a large set of simulated catalogs from our models in the [SysSimExClusters Simulated Catalogs](https://pennstateoffice365-my.sharepoint.com/:f:/g/personal/myh7_psu_edu/Ei7QJqnmaCBGipPM4uMzrusBjw_hUwo0KfIDBe-0UTYyMw) folder. If you simply wish to use these simulated catalogs as examples of our models, then no installation is required! Simply download any of these tables and use them for your own science. To be able to use them, you must understand that we provide two types of catalogs:
+We provide a large set of simulated catalogs from our models in the [SysSim Catalogs](https://drive.google.com/drive/folders/1hUsNwjtF0Y8Y8PCxORrQfcWPlFKh-rFl) folder. If you simply wish to use these simulated catalogs as examples of our models, then no installation is required! Simply download any of these tables and use them for your own science. To be able to use them, you must understand that we provide two types of catalogs:
 
 * *Physical catalog:* a set of intrinsic, physical planetary systems (before any observations; contains properties like the true orbital periods, planet radii, etc.)
 * *Observed catalog:* a set of transiting and detected planet candidates derived from a *physical catalog* (after a Kepler-like mission; contains properties like the measured orbital periods, transit depths, etc.)
@@ -55,7 +57,7 @@ git clone git@github.com:ExoJulia/SysSimExClusters.git
 ```
 * Switch to the branch of this repository containing the model you want to simulate from. For example, to simulate models from the most recent paper, do:
 ```
-git checkout He_et_al_2020b
+git checkout He_Ford_2026
 ```
 
 ### Usage:
