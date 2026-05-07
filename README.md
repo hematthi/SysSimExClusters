@@ -2,6 +2,8 @@
 
 [He \& Ford (2026), ApJ, 1001, 78 (34pp)](https://ui.adsabs.harvard.edu/abs/2026ApJ..1001...78H/abstract) ("Paper IV") \[[arXiv](https://arxiv.org/abs/2601.13480)\]
 
+<center><img src="/cartoons/Hybrid_model_cartoon_no_steps.pdf" alt="Cartoon illustration of the hybrid models" width="800"/></center>  
+
 
 
 ## To download simulated catalogs from our models:
