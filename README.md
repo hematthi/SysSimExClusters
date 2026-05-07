@@ -6,8 +6,8 @@
 
 ## To download simulated catalogs from our models:
 
-* Go to the [SysSimExClusters Simulated Catalogs](https://pennstateoffice365-my.sharepoint.com/:f:/g/personal/myh7_psu_edu/Ei7QJqnmaCBGipPM4uMzrusBjw_hUwo0KfIDBe-0UTYyMw) folder.
-* Navigate into "He_et_al_2020b/" and through the subdirectories. 
+* Go to the [SysSim Catalogs](https://drive.google.com/drive/folders/1hUsNwjtF0Y8Y8PCxORrQfcWPlFKh-rFl) folder.
+* Navigate into "H20 model/" and then "100 catalogs/" (or alternatively, "Large catalog" for a single simulated catalog with five times the number of Kepler targets). 
 * Download the "physical_catalogs.zip" file, which contains many "physical_catalogX.csv" tables (X = an index/number) including all the physical planets in each simulated catalog.
 
 | target_id | star_id | planet_mass    | planet_radius | clusterid | period     | ecc      | incl      | omega     | asc_node   | mean_anom | incl_invariable | asc_node_invariable | star_mass      | star_radius |
