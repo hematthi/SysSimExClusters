@@ -86,7 +86,7 @@ This will generate the following files:
 
 These files are analogous to the simulated catalogs we provide as described above.
 
-The following files will also be generated:
+In addition, the following files will also be generated:
 * Individual files with the true cluster id's, periods, orbital eccentricities, mutual inclinations, sky inclinations, planet radii, planet masses, stellar radii, and stellar masses, of all the planets per system (and stars with planets) in the physical catalog:
   * "clusterids_all.out"
   * "periods_all.out"
@@ -97,10 +97,10 @@ The following files will also be generated:
   * "masses_all.out"
   * "stellar_radii_with_planets.out"
   * "stellar_masses_with_planets.out"
+
 The data in these files are the same as those in "physical_catalog.csv", just organized in a different format.
 
-In addition, the following files will also be generated for just the new models (**HM-U** and **HM-C**):
-* Individual files with the planets' *initial* radii, masses, envelope masses, mass-loss timescales, envelope retention probabilities, and envelope retention booleans, of all the planets per system in the physical catalog:
+* Individual files with the planets' *initial* radii, masses, and envelope masses (i.e., before envelope mass-loss due to photoevaporation), as well as the mass-loss timescales, envelope retention probabilities, and envelope retention booleans, of all the planets per system in the physical catalog:
   * **"initial_radii_all.out"**
   * **"initial_masses_all.out"**
   * **"envelope_masses_all.out"**
@@ -108,7 +108,7 @@ In addition, the following files will also be generated for just the new models 
   * **"prob_retained_all.out"**
   * **"envelope_retained_all.out"**
 
-**NOTE:** the data in these files are NOT provided in the tables/csv files.
+**NOTE:** these files (bolded) are only generated for the new models (i.e. **HM-U** and **HM-C**). This data is NOT provided in the tables/csv files.
 
 * Individual files with the observed periods, transit depths, transit durations, stellar radii, and stellar masses of all the planets (and stars with observed planets) in the observed catalog:
   * "periods.out"
