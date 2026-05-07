@@ -7,7 +7,7 @@
 ## To download simulated catalogs from our models:
 
 * Go to the [SysSim Catalogs Google Drive](https://drive.google.com/drive/folders/1hUsNwjtF0Y8Y8PCxORrQfcWPlFKh-rFl).
-* Navigate into "HM-C/" and pick a folder ("100 catalogs" or "100 catalogs, depth_min 0.29"). 
+* Navigate into "HM-C/" and pick a folder ("100 catalogs, depth_min 0.29" is recommended for the best models). 
 * Download the "physical_catalogs.zip" file, which contains many "physical_catalogX.csv" tables (X = an index/number) including all the physical planets in each simulated catalog.
 
 | target_id | star_id | planet_mass    | planet_radius | clusterid | period     | ecc      | incl      | omega     | asc_node   | mean_anom | incl_invariable | asc_node_invariable | star_mass      | star_radius |
@@ -28,7 +28,7 @@ In each of these files, the header contains all the parameters of the model used
 
 :mega: **NOTE: The formats of these tables have NOT changed compared to the simulated catalogs from the previous models, so any functions used to load the previous tables should also work on these new files.**
 
-For each planet (row),
+For each planet (row):
 * **target_id**: the index of the star in the simulation (e.g. 1 for the first star in the simulation) the planet orbits
 * **star_id**: the index of the star based on where it is in the input stellar catalog (i.e. the row number in the "q1_q17_dr25_gaia_fgk_cleaned.csv" catalog, which can be found in the "plotting/" directory)
 * **clusterid**: a cluster identifier (i.e., which "cluster" in the system the planet belongs to)
@@ -63,7 +63,7 @@ add_param_fixed(sim_param, "power_law_γ1", 0.5) # the radius-mass power-law ind
 add_param_active(sim_param, "power_law_σ0", 0.23) # the spread (std) around the mean radius, below the break mass
 add_param_fixed(sim_param, "power_law_σ1", 0.3) # the spread (std) around the mean radius, above the break mass
 add_param_active(sim_param, "log_α_pret", log(8.)) # normalization factor for the envelope retention probability
-add_param_active(sim_param,"sigma_hk", 0.25) # the eccentricity (Rayleigh) scale for true singles
+add_param_active(sim_param, "sigma_hk", 0.25) # the eccentricity (Rayleigh) scale for true singles
 ```
 :twisted_rightwards_arrows: **There are two types of Hybrid Models: "Unclustered" (HM-U) vs. "Clustered" (HM-C).** To simulate catalogs from the **HM-C** (the preferred model), also set the cluster width (std) in log-mass of the initial planet mass distribution:
 ```julia
@@ -71,13 +71,7 @@ add_param_active(sim_param, "sigma_ln_mass_in_cluster", 0.48) # for clustered in
 ```
 If you want to simulate from the **HM-U** instead, do NOT set this parameter (i.e., this line should be commented out).
 
-:bulb: **NOTE:** as before, there is no difference between setting a parameter as "active" vs. "fixed" for the purposes of simulating catalogs. This is only used for choosing which parameters to vary if one wants to run optimization algorithms on the models.
-
-:warning: **NOTE:** the line:
-```julia
-add_param_fixed(sim_param,"osd_file","dr25fgk_relaxcut_osds.jld2")
-```
-will load a file that requires about 8gb of memory to read. If your machine cannot handle that, you can comment out this line and uncomment the previous line to use a smaller osd file ("dr25fgk_small_osds.jld2"). However, the results will not be as accurate.
+:bulb: **NOTE:** as before, there is no difference between setting a parameter as "active" vs. "fixed" for the purposes of simulating a catalog. This is only used for choosing which parameters to vary if one wants to run optimization algorithms on the models.
 
 2. Move into a directory where you want your simulated catalogs to be saved and run the script "generate_catalogs.jl" in "examples/" in Julia. For example, you can navigate to "examples/", start Julia, and run:
 ```julia
@@ -93,7 +87,7 @@ This will generate the following files:
 These files are analogous to the simulated catalogs we provide as described above.
 
 The following files will also be generated:
-* An individual file for the true cluster id's, periods, orbital eccentricities, mutual inclinations, sky inclinations, planet radii, planet masses, stellar radii, and stellar masses, of all the planets per system (and stars with planets) in the physical catalog:
+* Individual files with the true cluster id's, periods, orbital eccentricities, mutual inclinations, sky inclinations, planet radii, planet masses, stellar radii, and stellar masses, of all the planets per system (and stars with planets) in the physical catalog:
   * "clusterids_all.out"
   * "periods_all.out"
   * "eccentricities_all.out"
@@ -106,7 +100,7 @@ The following files will also be generated:
 The data in these files are the same as those in "physical_catalog.csv", just organized in a different format.
 
 In addition, the following files will also be generated for just the new models (**HM-U** and **HM-C**):
-* An individual file for the planets' *initial* radii, masses, envelope masses, mass-loss timescales, envelope retention probabilities, and envelope retention booleans, of all the planets per system in the physical catalog:
+* Individual files with the planets' *initial* radii, masses, envelope masses, mass-loss timescales, envelope retention probabilities, and envelope retention booleans, of all the planets per system in the physical catalog:
   * **"initial_radii_all.out"**
   * **"initial_masses_all.out"**
   * **"envelope_masses_all.out"**
@@ -116,7 +110,7 @@ In addition, the following files will also be generated for just the new models 
 
 **NOTE:** the data in these files are NOT provided in the tables/csv files.
 
-* An individual file for the observed periods, transit depths, transit durations, stellar radii, and stellar masses of all the planets (and stars with observed planets) in the observed catalog:
+* Individual files with the observed periods, transit depths, transit durations, stellar radii, and stellar masses of all the planets (and stars with observed planets) in the observed catalog:
   * "periods.out"
   * "depths.out"
   * "durations.out"
