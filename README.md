@@ -2,7 +2,7 @@
 
 This repository provides a comprehensive forward modelling framework for studying planetary systems.
 
-<center><img src="/best_models/Clustered_P_R_observed.gif" alt="Best fit clustered models" width="800"/></center>  
+<center><img src="/cartoons/Clustered_P_R_observed.gif" alt="Best fit clustered models" width="800"/></center>  
 
 We develop and provide several *statistical* models for describing the intrinsic planetary systems, their architectures, and the correlations within multi-planet systems, using the Kepler population of exoplanet candidates. Our specific models are described in the following papers:
 
